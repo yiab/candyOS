@@ -1,0 +1,40 @@
+diff -Naur glibc-ports-2.16.0/sysdeps/arm/preconfigure glibc-ports-2.16.0-new/sysdeps/arm/preconfigure
+--- glibc-ports-2.16.0/sysdeps/arm/preconfigure	2012-06-22 01:08:19.000000000 +0800
++++ glibc-ports-2.16.0-new/sysdeps/arm/preconfigure	2016-10-19 17:27:31.484779402 +0800
+@@ -1,8 +1,8 @@
+ case "$machine" in
+ arm*)
+ 	base_machine=arm
+-	case $config_os in
+-	linux-gnueabi*)
++#	case $config_os in
++#	linux-gnueabi*)
+ 		# Lets ask the compiler which ARM family we've got
+ 		# Unfortunately it doesn't define any flags for implementations
+ 		# that you might pass to -mcpu or -mtune
+@@ -30,7 +30,7 @@
+ 		  ;;
+ 
+ 		*)
+-		  machine=arm
++		  machine=armv7
+ 		  echo 2>&1 "arm/preconfigure: Did not find ARM architecture type; using default"
+ 		  ;;
+ 		esac
+@@ -41,10 +41,10 @@
+ 		fi
+ 		CFLAGS="$CFLAGS -fno-unwind-tables"
+ 		;;
+-	*)
+-		echo "Old ABI no longer supported" 2>&1
+-		exit 1
+-		;;
+-	esac
+-	;;
++#	*)
++#		echo "Old ABI no longer supported" 2>&1
++#		exit 1
++#		;;
++#	esac
++#	;;
+ esac

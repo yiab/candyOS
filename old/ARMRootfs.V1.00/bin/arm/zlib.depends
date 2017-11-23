@@ -1,0 +1,9 @@
+zlib		= zlib-1.2.6.tar.bz2			
+. {
+	export CC=$MY_TARGET-gcc
+	export CFLAGS="$CFLAGS $CROSS_FLAGS"
+	
+	configure --prefix=/usr
+	make install DESTDIR=$INSTDIR
+}
+

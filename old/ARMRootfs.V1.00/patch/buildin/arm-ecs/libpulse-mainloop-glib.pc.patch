@@ -1,0 +1,12 @@
+prefix=/usr
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: libpulse-mainloop-glib
+Description: PulseAudio GLib 2.0 Main Loop Wrapper
+Version: 2.0
+Libs: -L${libdir} -lpulse-mainloop-glib -L${libdir}/pulseaudio -ljson -lpulsecommon-2.0 -lXi
+Libs.private: -lpulsecommon-2.0
+Cflags: -I${includedir} -D_REENTRANT
+Requires: libpulse glib-2.0 ice sm xtst xext sndfile

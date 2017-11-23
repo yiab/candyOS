@@ -1,0 +1,31 @@
+diff -Naur xserver-xorg-video-imx-11.09.01/src/imx_ext.c xserver-xorg-video-imx-11.09.01-new/src/imx_ext.c
+--- xserver-xorg-video-imx-11.09.01/src/imx_ext.c	2011-07-27 05:22:47.000000000 +0800
++++ xserver-xorg-video-imx-11.09.01-new/src/imx_ext.c	2012-12-12 12:01:57.180274000 +0800
+@@ -32,6 +32,27 @@
+ 
+ #include "imx_ext.h"
+ 
++#ifdef swapl
++#undef swapl
++/* byte swap a 32-bit value */
++#define swapl(x, n) { \
++		 n = ((char *) (x))[0];\
++		 ((char *) (x))[0] = ((char *) (x))[3];\
++		 ((char *) (x))[3] = n;\
++		 n = ((char *) (x))[1];\
++		 ((char *) (x))[1] = ((char *) (x))[2];\
++		 ((char *) (x))[2] = n; }
++#endif
++
++#ifdef swaps
++#undef swaps
++/* byte swap a short */
++#define swaps(x, n) { \
++		 n = ((char *) (x))[0];\
++		 ((char *) (x))[0] = ((char *) (x))[1];\
++		 ((char *) (x))[1] = n; }
++#endif
++ 
+ /* External functions defined elsewhere in the driver. */
+ extern Bool
+ imxExaZ160GetPixmapProperties(

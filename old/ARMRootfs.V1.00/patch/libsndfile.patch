@@ -1,0 +1,12 @@
+diff -Naur libsndfile-1.0.25/src/sndfile.c libsndfile-1.0.25-new/src/sndfile.c
+--- libsndfile-1.0.25/src/sndfile.c	2011-07-06 17:29:01.000000000 +0800
++++ libsndfile-1.0.25-new/src/sndfile.c	2012-07-24 09:28:49.026225402 +0800
+@@ -309,7 +309,7 @@
+ {	SF_PRIVATE 	*psf ;
+ 
+ 	/* Ultimate sanity check. */
+-	assert (sizeof (sf_count_t) == 8) ;
++	/* assert (sizeof (sf_count_t) == 8) ; */
+ 
+ 	if ((psf = calloc (1, sizeof (SF_PRIVATE))) == NULL)
+ 	{	sf_errno = SFE_MALLOC_FAILED ;

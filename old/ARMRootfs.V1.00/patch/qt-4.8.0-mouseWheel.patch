@@ -1,0 +1,35 @@
+diff -Nurp qt-everywhere-opensource-src-4.8.0/src/gui/embedded/qmouselinuxinput_qws.cpp qt-everywhere-opensource-src-4.8.0-ti-min/src/gui/embedded/qmouselinuxinput_qws.cpp
+--- qt-everywhere-opensource-src-4.8.0/src/gui/embedded/qmouselinuxinput_qws.cpp	2011-12-08 13:06:02.000000000 +0800
++++ qt-everywhere-opensource-src-4.8.0-ti-min/src/gui/embedded/qmouselinuxinput_qws.cpp	2012-03-09 15:07:18.041365093 +0800
+@@ -178,6 +178,9 @@ void QWSLinuxInputMousePrivate::readMous
+                 m_x += data->value;
+             } else if (data->code == REL_Y) {
+                 m_y += data->value;
++            } else if (data->code == REL_WHEEL) {
++            	QPoint pos(m_x, m_y);
++            	m_handler->mouseChanged(pos, 0, data->value * 120);
+             } else {
+                 unknown = true;
+             }
+diff -Nurp qt-everywhere-opensource-src-4.8.0/src/gui/kernel/qapplication_qws.cpp qt-everywhere-opensource-src-4.8.0-ti-min/src/gui/kernel/qapplication_qws.cpp
+--- qt-everywhere-opensource-src-4.8.0/src/gui/kernel/qapplication_qws.cpp	2011-12-08 13:06:02.000000000 +0800
++++ qt-everywhere-opensource-src-4.8.0-ti-min/src/gui/kernel/qapplication_qws.cpp	2012-03-09 15:05:53.132865321 +0800
+@@ -997,7 +997,10 @@ void QWSDisplay::Data::fillQueue()
+             if (!qt_screen) {
+                 delete e;
+             } else {
++	        int previous_delta = 0;
+                 QWSMouseEvent *me = static_cast<QWSMouseEvent*>(e);
++                if (mouse_event)
++                 	previous_delta = mouse_event->simpleData.delta;
+                 if (mouseFilter)
+                     mouseFilter(me);
+ #ifdef QAPPLICATION_EXTRA_DEBUG
+@@ -1021,6 +1024,7 @@ void QWSDisplay::Data::fillQueue()
+                         action = "COMPRESS";
+                     mouse_event_count++;
+ #endif
++                    me->simpleData.delta += previous_delta;
+                     mouse_event = me;
+                 }
+ #ifdef QAPPLICATION_EXTRA_DEBUG

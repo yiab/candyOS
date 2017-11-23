@@ -1,0 +1,8 @@
+temp/
+stamps/
+cache/
+dist/
+out/
+packages
+packages/
+tools/

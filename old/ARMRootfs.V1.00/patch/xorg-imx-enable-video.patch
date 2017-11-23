@@ -1,0 +1,40 @@
+diff -Naur xserver-xorg-video-imx-11.09.01/src/Makefile.am xserver-xorg-video-imx-11.09.01-new/src/Makefile.am
+--- xserver-xorg-video-imx-11.09.01/src/Makefile.am	2011-07-27 05:22:47.000000000 +0800
++++ xserver-xorg-video-imx-11.09.01-new/src/Makefile.am	2013-01-10 13:23:30.318082772 +0800
+@@ -30,12 +30,12 @@
+ NEON_ASFLAGS=-k -mcpu=cortex-a8 $(NEON_CCASFLAGS)
+ 
+ # Use these two lines to enable Xvideo support
+-#AM_CFLAGS = @XORG_CFLAGS@ -DRENDER -DCOMPOSITE -DMITSHM -DIMX_XVIDEO_ENABLE=1 $(NEON_CFLAGS)
+-#imx_drv_la_LDFLAGS = -module -avoid-version -lz160 -lipu
++AM_CFLAGS = @XORG_CFLAGS@ -DRENDER -DCOMPOSITE -DMITSHM -DIMX_XVIDEO_ENABLE=1 $(NEON_CFLAGS)
++imx_drv_la_LDFLAGS = -module -avoid-version -lz160 -lipu
+ 
+ # Or use these two lines to disable Xvideo support
+-AM_CFLAGS = @XORG_CFLAGS@ -DRENDER -DCOMPOSITE -DMITSHM -DIMX_XVIDEO_ENABLE=0 $(NEON_CFLAGS)
+-imx_drv_la_LDFLAGS = -module -avoid-version -lz160
++#AM_CFLAGS = @XORG_CFLAGS@ -DRENDER -DCOMPOSITE -DMITSHM -DIMX_XVIDEO_ENABLE=0 $(NEON_CFLAGS)
++#imx_drv_la_LDFLAGS = -module -avoid-version -lz160
+ 
+ AM_ASFLAGS = $(NEON_ASFLAGS)
+ AM_CCASFLAGS = $(NEON_CCASFLAGS)
+diff -Naur xserver-xorg-video-imx-11.09.01/src/Makefile.in xserver-xorg-video-imx-11.09.01-new/src/Makefile.in
+--- xserver-xorg-video-imx-11.09.01/src/Makefile.in	2011-07-27 05:22:47.000000000 +0800
++++ xserver-xorg-video-imx-11.09.01-new/src/Makefile.in	2013-01-15 16:17:13.380183395 +0800
+@@ -255,12 +255,12 @@
+ NEON_ASFLAGS = -k -mcpu=cortex-a8 $(NEON_CCASFLAGS)
+ 
+ # Use these two lines to enable Xvideo support
+-#AM_CFLAGS = @XORG_CFLAGS@ -DRENDER -DCOMPOSITE -DMITSHM -DIMX_XVIDEO_ENABLE=1 $(NEON_CFLAGS)
+-#imx_drv_la_LDFLAGS = -module -avoid-version -lz160 -lipu
++AM_CFLAGS = @XORG_CFLAGS@ -DRENDER -DCOMPOSITE -DMITSHM -DIMX_XVIDEO_ENABLE=1 $(NEON_CFLAGS)
++imx_drv_la_LDFLAGS = -module -avoid-version -lz160 -lipu
+ 
+ # Or use these two lines to disable Xvideo support
+-AM_CFLAGS = @XORG_CFLAGS@ -DRENDER -DCOMPOSITE -DMITSHM -DIMX_XVIDEO_ENABLE=0 $(NEON_CFLAGS)
+-imx_drv_la_LDFLAGS = -module -avoid-version -lz160
++#AM_CFLAGS = @XORG_CFLAGS@ -DRENDER -DCOMPOSITE -DMITSHM -DIMX_XVIDEO_ENABLE=0 $(NEON_CFLAGS)
++#imx_drv_la_LDFLAGS = -module -avoid-version -lz160
+ AM_ASFLAGS = $(NEON_ASFLAGS)
+ AM_CCASFLAGS = $(NEON_CCASFLAGS)
+ imx_drv_la_LTLIBRARIES = imx_drv.la

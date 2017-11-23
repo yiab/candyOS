@@ -1,0 +1,13 @@
+diff -Naur libX11-1.5.0/configure.ac libX11-1.5.0-new/configure.ac
+--- libX11-1.5.0/configure.ac	2012-06-02 14:37:09.000000000 +0800
++++ libX11-1.5.0-new/configure.ac	2012-11-27 08:37:03.256944867 +0800
+@@ -306,7 +306,8 @@
+ # Find keysymdef.h
+ #
+ AC_MSG_CHECKING([keysym definitions])
+-KEYSYMDEFDIR=`$PKG_CONFIG --variable=includedir xproto`/X11
++AC_ARG_VAR([PKG_CONFIG_SYSROOT_DIR], [sysroot dir])
++KEYSYMDEFDIR=$PKG_CONFIG_SYSROOT_DIR`$PKG_CONFIG --variable=includedir xproto`/X11
+ FILES="keysymdef.h XF86keysym.h Sunkeysym.h DECkeysym.h HPkeysym.h"
+ for i in $FILES; do
+     if test -f "$KEYSYMDEFDIR/$i"; then

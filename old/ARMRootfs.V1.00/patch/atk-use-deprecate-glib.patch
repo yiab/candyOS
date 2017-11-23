@@ -1,0 +1,22 @@
+diff -Naur atk-1.91.92/atk/Makefile.am atk-1.91.92-new/atk/Makefile.am
+--- atk-1.91.92/atk/Makefile.am	2011-03-23 16:18:33.000000000 +0800
++++ atk-1.91.92-new/atk/Makefile.am	2012-11-28 14:22:12.252389573 +0800
+@@ -15,7 +15,6 @@
+ 
+ INCLUDES = \
+ 	-I$(top_srcdir)		\
+-	-DG_DISABLE_DEPRECATED	\
+ 	-DATK_DISABLE_DEPRECATED	\
+ 	-DATK_COMPILATION	\
+ 	-DATK_LOCALEDIR="\"$(datadir)/locale\""	\
+diff -Naur atk-1.91.92/tests/Makefile.am atk-1.91.92-new/tests/Makefile.am
+--- atk-1.91.92/tests/Makefile.am	2010-09-06 14:45:45.000000000 +0800
++++ atk-1.91.92-new/tests/Makefile.am	2012-11-28 14:23:22.248129704 +0800
+@@ -11,7 +11,6 @@
+ libatk = $(top_builddir)/atk/libatk-$(ATK_API_VERSION).la
+ 
+ INCLUDES = -I$(top_srcdir)	\
+-	-DG_DISABLE_DEPRECATED	\
+ 	$(DEP_CFLAGS)
+ DEPS = \
+ 	$(libatk)

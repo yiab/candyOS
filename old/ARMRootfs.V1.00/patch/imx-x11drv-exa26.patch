@@ -1,0 +1,121 @@
+diff -Naur xserver-xorg-video-imx-2.0.1/src/imx_drv.c xserver-xorg-video-imx-2.0.1-patch/src/imx_drv.c
+--- xserver-xorg-video-imx-2.0.1/src/imx_drv.c	2012-03-16 08:57:06.000000000 +0800
++++ xserver-xorg-video-imx-2.0.1-patch/src/imx_drv.c	2013-01-05 16:11:00.832382000 +0800
+@@ -66,14 +66,14 @@
+ 
+ #include "xf86xv.h"
+ 
+-static Bool debug = 0;
++static Bool debug = 1;
+ 
+ #define TRACE_ENTER(str) \
+     do { if (debug) ErrorF("imx: " str " %d\n",pScrn->scrnIndex); } while (0)
+ #define TRACE_EXIT(str) \
+     do { if (debug) ErrorF("imx: " str " done\n"); } while (0)
+ #define TRACE(str) \
+-    do { if (debug) ErrorF("inx trace: " str "\n"); } while (0)
++    do { if (debug) ErrorF("imx trace: " str "\n"); } while (0)
+ 
+ /* -------------------------------------------------------------------- */
+ /* prototypes                                                           */
+@@ -82,8 +82,8 @@
+ static void	IMXIdentify(int flags);
+ static Bool	IMXProbe(DriverPtr drv, int flags);
+ static Bool	IMXPreInit(ScrnInfoPtr pScrn, int flags);
+-static Bool	IMXScreenInit(int Index, ScreenPtr pScreen, int argc, char **argv);
+-static Bool	IMXCloseScreen(int scrnIndex, ScreenPtr pScreen);
++static Bool	IMXScreenInit(ScreenPtr pScreen, int argc, char **argv);
++static Bool	IMXCloseScreen(ScreenPtr pScreen);
+ static Bool	IMXDriverFunc(ScrnInfoPtr pScrn, xorgDriverFuncOp op, pointer ptr);
+ 
+ /* for XV acceleration */
+@@ -93,8 +93,8 @@
+ extern void IMX_EXA_GetRec(ScrnInfoPtr pScrn);
+ extern void IMX_EXA_FreeRec(ScrnInfoPtr pScrn);
+ extern Bool IMX_EXA_PreInit(ScrnInfoPtr pScrn);
+-extern Bool IMX_EXA_ScreenInit(int scrnIndex, ScreenPtr pScreen);
+-extern Bool IMX_EXA_CloseScreen(int scrnIndex, ScreenPtr pScreen);
++extern Bool IMX_EXA_ScreenInit(ScreenPtr pScreen);
++extern Bool IMX_EXA_CloseScreen(ScreenPtr pScreen);
+ extern Bool IMX_EXA_GetPixmapProperties(PixmapPtr pPixmap, void** pPhysAddr, int* pPitch);
+ 
+ /* for X extension */
+@@ -522,8 +522,9 @@
+ }
+ 
+ static Bool
+-IMXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
++IMXScreenInit(ScreenPtr pScreen, int argc, char **argv)
+ {
++	int scrnIndex = 0;
+ 	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+ 	IMXPtr fPtr = IMXPTR(pScrn);
+ 	VisualPtr visual;
+@@ -557,7 +558,7 @@
+ 		return FALSE;
+ 	}
+ 	fbdevHWSaveScreen(pScreen, SCREEN_SAVER_ON);
+-	fbdevHWAdjustFrame(scrnIndex,0,0,0);
++	fbdevHWAdjustFrame(pScrn,0,0);
+ 
+ 	/* mi layer */
+ 	miClearVisualTypes();
+@@ -676,8 +677,8 @@
+ 	xf86SetBlackWhitePixels(pScreen);
+ 
+ 	/* INITIALIZE ACCELERATION BEFORE INIT FOR BACKING STORE AND SOFTWARE CURSOR */ 
+-	if (!IMX_EXA_ScreenInit(scrnIndex, pScreen)) {
+-
++/*	if (!IMX_EXA_ScreenInit(scrnIndex, pScreen)) {*/
++	if (!IMX_EXA_ScreenInit(pScreen)) {
+ 	    xf86DrvMsg(scrnIndex, X_ERROR,
+ 		       "IMX EXA failed to initialize screen.\n");
+ 	    return FALSE;
+@@ -764,9 +765,11 @@
+ }
+ 
+ static Bool
+-IMXCloseScreen(int scrnIndex, ScreenPtr pScreen)
++IMXCloseScreen(ScreenPtr pScreen)
+ {
+-	IMX_EXA_CloseScreen(scrnIndex, pScreen);
++	int scrnIndex = 0;
++
++	IMX_EXA_CloseScreen(pScreen);
+ 
+ 	ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+ 	IMXPtr fPtr = IMXPTR(pScrn);
+@@ -779,7 +782,7 @@
+ 
+ 	IMXFreeRec(pScrn);
+ 
+-	return (*pScreen->CloseScreen)(scrnIndex, pScreen);
++	return (*pScreen->CloseScreen)(pScreen);
+ }
+ 
+ Bool
+diff -Naur xserver-xorg-video-imx-2.0.1/src/imx_exa_c2d.c xserver-xorg-video-imx-2.0.1-patch/src/imx_exa_c2d.c
+--- xserver-xorg-video-imx-2.0.1/src/imx_exa_c2d.c	2012-03-16 08:57:06.000000000 +0800
++++ xserver-xorg-video-imx-2.0.1-patch/src/imx_exa_c2d.c	2013-01-05 14:59:21.316891000 +0800
+@@ -2946,7 +2946,8 @@
+ }
+ 
+ Bool
+-IMX_EXA_ScreenInit(int scrnIndex, ScreenPtr pScreen)
++/*IMX_EXA_ScreenInit(int scrnIndex, ScreenPtr pScreen)*/
++IMX_EXA_ScreenInit(ScreenPtr pScreen)
+ {
+ 	/* Access screen info associated with this screen. */
+ 	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+@@ -3063,8 +3064,10 @@
+ }
+ 
+ Bool
+-IMX_EXA_CloseScreen(int scrnIndex, ScreenPtr pScreen)
++IMX_EXA_CloseScreen(ScreenPtr pScreen)
+ {
++	int scrnIndex = 0;
++
+ 	/* Access screen info associated with this screen. */
+ 	ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+ 

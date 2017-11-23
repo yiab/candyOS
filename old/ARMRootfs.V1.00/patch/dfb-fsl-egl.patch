@@ -1,0 +1,48 @@
+diff -Naur DirectFB-1.6.2/systems/egl/egl_surface_pool.c DirectFB-1.6.2-new/systems/egl/egl_surface_pool.c
+--- DirectFB-1.6.2/systems/egl/egl_surface_pool.c	2012-09-21 00:19:08.000000000 +0800
++++ DirectFB-1.6.2-new/systems/egl/egl_surface_pool.c	2012-11-07 16:16:11.226847408 +0800
+@@ -726,7 +726,8 @@
+           glTexSubImage2D(GL_TEXTURE_2D, 0, rect->x, rect->y, rect->w, rect->h, GL_RGBA, GL_UNSIGNED_BYTE, source);
+      }
+      else {
+-          glTexSubImage2D(GL_TEXTURE_2D, 0, rect->x, rect->y, rect->w, rect->h, GL_BGRA_EXT, GL_UNSIGNED_BYTE, source);
++	      D_ERROR( "DirectFB/PVR2D: using BGRA format!\n" );
++          glTexSubImage2D(GL_TEXTURE_2D, 0, rect->x, rect->y, rect->w, rect->h, GL_BGRA, GL_UNSIGNED_BYTE, source);
+      }
+ 
+      if ((err = glGetError()) != 0) {
+diff -Naur DirectFB-1.6.2/systems/egl/egl_system.c DirectFB-1.6.2-new/systems/egl/egl_system.c
+--- DirectFB-1.6.2/systems/egl/egl_system.c	2012-09-21 00:19:08.000000000 +0800
++++ DirectFB-1.6.2-new/systems/egl/egl_system.c	2012-11-07 16:16:11.226847408 +0800
+@@ -49,7 +49,10 @@
+ 
+ #include <core/core_system.h>
+ 
+-#define RASPBERRY_PI
++/*#define RASPBERRY_PI*/
++#include <stdio.h>
++#include <stdlib.h>
++#include <fcntl.h>
+ 
+ DFB_CORE_SYSTEM( egl )
+ 
+@@ -75,7 +78,9 @@
+      VC_RECT_T src_rect;
+ 
+      bcm_host_init();
+-
++#else
++	static int nativewindow;
++	nativewindow = open("/dev/fb0", O_RDWR);
+ #endif     
+      egl->eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+ 
+@@ -143,7 +148,7 @@
+ 
+ #endif
+ 
+-     egl->eglSurface = eglCreateWindowSurface( egl->eglDisplay, egl->eglConfig, &nativewindow, NULL );
++     egl->eglSurface = eglCreateWindowSurface( egl->eglDisplay, egl->eglConfig, nativewindow, NULL );
+      if (!TestEGLError("eglCreateWindowSurface"))
+           return DFB_INIT;
+ 

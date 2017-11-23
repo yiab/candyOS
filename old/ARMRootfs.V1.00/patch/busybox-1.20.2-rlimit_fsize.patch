@@ -1,0 +1,11 @@
+diff -Naur busybox-1.20.2/include/libbb.h busybox-1.20.2-new/include/libbb.h
+--- busybox-1.20.2/include/libbb.h	2012-07-02 22:08:25.000000000 +0800
++++ busybox-1.20.2-new/include/libbb.h	2012-11-23 14:22:43.858438297 +0800
+@@ -40,6 +40,7 @@
+ #include <sys/poll.h>
+ #include <sys/ioctl.h>
+ #include <sys/mman.h>
++#include <sys/resource.h>
+ #include <sys/socket.h>
+ #include <sys/stat.h>
+ #include <sys/time.h>

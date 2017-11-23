@@ -1,0 +1,14 @@
+diff -Naur GConf-2.8.1/examples/basic-gconf-app.c GConf-2.8.1-new/examples/basic-gconf-app.c
+--- GConf-2.8.1/examples/basic-gconf-app.c	2004-04-19 18:17:01.000000000 +0800
++++ GConf-2.8.1-new/examples/basic-gconf-app.c	2013-01-16 15:15:45.380089807 +0800
+@@ -79,8 +79,10 @@
+  */ 
+ 
+  /* Be clean and pure */
++/*
+ #define GTK_DISABLE_DEPRECATED
+ #define G_DISABLE_DEPRECATED
++*/
+ 
+ #include <gconf/gconf-client.h>
+ #include <gtk/gtk.h>

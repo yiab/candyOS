@@ -1,0 +1,31 @@
+diff -Naur usb-modeswitch-1.2.3/make_static_dispatcher.sh usb-modeswitch-1.2.3-new/make_static_dispatcher.sh
+--- usb-modeswitch-1.2.3/make_static_dispatcher.sh	2011-10-24 02:18:14.000000000 +0800
++++ usb-modeswitch-1.2.3-new/make_static_dispatcher.sh	2012-10-22 09:22:18.190980173 +0800
+@@ -9,7 +9,7 @@
+ 	fi
+ 	export CFLAGS="-Os"
+ 	echo "Configuring the Jim library ..."
+-	./configure --disable-lineedit --with-out-jim-ext="stdlib posix load signal syslog" --prefix=/usr
++	./configure --disable-lineedit --with-out-jim-ext="stdlib posix load signal syslog" --prefix=/usr --host=$CTARGET
+ 	echo "Compiling the Jim library ..."
+ 	make lib
+ 	cd ..
+@@ -22,7 +22,7 @@
+ if [ -z $SHELL ]; then
+ 	SHELL="jim/autosetup/jimsh0"
+ 	if [ ! -e $SHELL ] ; then
+-    	gcc -o "jim/autosetup/jimsh0" "jim/autosetup/jimsh0.c"
++    	$CTARGET-gcc -o "jim/autosetup/jimsh0" "jim/autosetup/jimsh0.c"
+ 	fi
+ 	if [ ! -e $SHELL ] ; then
+ 		echo "No Tcl shell found!"
+@@ -42,7 +42,7 @@
+ export CFLAGS="$CFLAGS -Wall -I./jim"
+ export LDLIBS="$LDLIBS -L./jim -ljim"
+ echo "Compiling the usb_modeswitch dispatcher ..."
+-gcc $CFLAGS dispatcher.c $LDLIBS -o usb_modeswitch_dispatcher
+-strip usb_modeswitch_dispatcher
++$CTARGET-gcc $CFLAGS dispatcher.c $LDLIBS -o usb_modeswitch_dispatcher
++$CTARGET-strip usb_modeswitch_dispatcher
+ echo "Done!"
+ 

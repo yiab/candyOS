@@ -1,0 +1,39 @@
+
+diff -Naur linux-2.6.35.3-fsl-loco/drivers/base/devtmpfs.c linux-2.6.35.3-fsl-loco-new/drivers/base/devtmpfs.c
+--- linux-2.6.35.3-fsl-loco/drivers/base/devtmpfs.c	2010-08-21 02:55:55.000000000 +0800
++++ linux-2.6.35.3-fsl-loco-new/drivers/base/devtmpfs.c	2012-10-19 16:47:20.338571312 +0800
+@@ -373,16 +373,17 @@
+ {
+ 	int err;
+ 	struct vfsmount *mnt;
+-	char options[] = "mode=0755";
+ 
+ 	err = register_filesystem(&dev_fs_type);
++
+ 	if (err) {
+ 		printk(KERN_ERR "devtmpfs: unable to register devtmpfs "
+ 		       "type %i\n", err);
+ 		return err;
+ 	}
+ 
+-	mnt = kern_mount_data(&dev_fs_type, options);
++	/*mnt = kern_mount_data(&dev_fs_type, options);*/
++	mnt = kern_mount_data(&dev_fs_type, "mode=0755");
+ 	if (IS_ERR(mnt)) {
+ 		err = PTR_ERR(mnt);
+ 		printk(KERN_ERR "devtmpfs: unable to create devtmpfs %i\n", err);
+
+diff -Naur linux-2.6.35.3-fsl-loco-v2/arch/arm/Makefile linux-2.6.35.3-fsl-loco-v2-new/arch/arm/Makefile
+--- linux-2.6.35.3-fsl-loco-v2/arch/arm/Makefile	2012-11-05 13:21:42.000000000 +0800
++++ linux-2.6.35.3-fsl-loco-v2-new/arch/arm/Makefile	2012-11-21 08:37:18.369423188 +0800
+@@ -93,6 +93,10 @@
+ CFLAGS_ABI	+=-funwind-tables
+ endif
+ 
++ifeq ($(CONFIG_ALIGNMENT_TRAP),y)
++CFLAGS_ABI  += -mno-unaligned-access -march=armv7-a -mfpu=neon
++endif
++
+ ifeq ($(CONFIG_THUMB2_KERNEL),y)
+ AFLAGS_AUTOIT	:=$(call as-option,-Wa$(comma)-mimplicit-it=always,-Wa$(comma)-mauto-it)
+ AFLAGS_NOWARN	:=$(call as-option,-Wa$(comma)-mno-warn-deprecated,-Wa$(comma)-W)

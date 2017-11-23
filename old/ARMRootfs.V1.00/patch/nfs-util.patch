@@ -1,0 +1,14 @@
+diff -Naur nfs-utils-1.2.6/utils/exportfs/exportfs.c nfs-utils-1.2.6-new/utils/exportfs/exportfs.c
+--- nfs-utils-1.2.6/utils/exportfs/exportfs.c	2012-05-14 22:40:52.000000000 +0800
++++ nfs-utils-1.2.6-new/utils/exportfs/exportfs.c	2012-07-20 13:08:39.583013325 +0800
+@@ -50,6 +50,10 @@
+ static const char *lockfile = EXP_LOCKFILE;
+ static int _lockfd = -1;
+ 
++#include <syslog.h>
++int     allow_severity = LOG_INFO;	/* run-time adjustable */
++int     deny_severity = LOG_WARNING;	/* ditto */
++
+ /*
+  * If we aren't careful, changes made by exportfs can be lost
+  * when multiple exports process run at once:

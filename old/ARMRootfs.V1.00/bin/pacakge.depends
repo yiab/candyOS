@@ -1,0 +1,59 @@
+# boot section
+x-loader	= x-loader.tar.bz2				; build, pack, restore
+u-boot		= u-boot-release.tar.bz2		;
+kernel		= linux-03.00.01.06.tar.xz
+
+# rootfs
+init-rootfs	= initrootfs.sh					; runonce
+
+#nfsutils
+nfsutils : zlib
+
+zlib		= zlib-1.2.6.tar.bz2			; 
+. {
+	export CC=$MY_TARGET-gcc
+	export CFLAGS="$CFLAGS $CROSS_FLAGS"
+	
+	configure --prefix=/usr
+	make install DESTDIR=$INSTDIR
+}
+
+/*
+busybox-1.19.4.tar.bz2
+busybox-1.20.0.tar.bz2
+cloog-0.16.2.tar.gz
+cloog-ppl-0.15.9.tar.gz
+DirectFB-1.5.3.tar.gz
+fbset_2.1.tar.gz
+file-5.11.tar.gz
+freetype-2.4.8.tar.bz2
+gcc-4.6.3.tar.bz2
+gcc-4.7.0.tar.bz2
+gfx_rel_es3.x.tar.bz2
+glib-2.28.8.tar.xz
+glibc-2.14.tar.bz2
+glibc-ports-2.14.tar.bz2
+gmp-5.0.4.tar.xz
+Graphics_SDK_4_05_00_03.tar.bz2
+jpeg-8d.tar.bz2
+libevent-2.0.19-stable.tar.gz
+libffi-3.0.11.tar.gz
+libgssglue-0.4.tar.gz
+libnfsidmap-0.25.tar.gz
+libpng-1.4.9.tar.bz2
+librpcsecgss-0.19.tar.gz
+libtirpc-0.2.2.tar.bz2
+
+LVM2.2.02.96.tar.bz2
+mpc-0.9.tar.xz
+mpfr-3.1.0.tar.bz2
+nfs-utils-1.2.6.tar.bz2
+pkg-config-0.26.tar.gz
+ppl-0.12.tar.xz
+qt-everywhere-opensource-src-4.8.0.tar.gz
+splashy-0.3.13.tar.gz
+tcp_wrappers_7.6.tar.gz
+
+util-linux-2.21.2.tar.xz
+zlib-1.2.6.tar.bz2
+*/

@@ -1,0 +1,259 @@
+diff -Naur linux-2.6.35.3-ecs/drivers/base/devtmpfs.c linux-2.6.35.3-ecs-new/drivers/base/devtmpfs.c
+--- linux-2.6.35.3-ecs/drivers/base/devtmpfs.c	2010-08-21 02:55:55.000000000 +0800
++++ linux-2.6.35.3-ecs-new/drivers/base/devtmpfs.c	2012-10-19 16:47:20.338571312 +0800
+@@ -373,16 +373,17 @@
+ {
+ 	int err;
+ 	struct vfsmount *mnt;
+-	char options[] = "mode=0755";
+ 
+ 	err = register_filesystem(&dev_fs_type);
++
+ 	if (err) {
+ 		printk(KERN_ERR "devtmpfs: unable to register devtmpfs "
+ 		       "type %i\n", err);
+ 		return err;
+ 	}
+ 
+-	mnt = kern_mount_data(&dev_fs_type, options);
++	/*mnt = kern_mount_data(&dev_fs_type, options);*/
++	mnt = kern_mount_data(&dev_fs_type, "mode=0755");
+ 	if (IS_ERR(mnt)) {
+ 		err = PTR_ERR(mnt);
+ 		printk(KERN_ERR "devtmpfs: unable to create devtmpfs %i\n", err);
+
+diff -Naur linux-2.6.35.3-ecs/arch/arm/mach-mx5/mx53_loco.c linux-2.6.35.3-ecs-new/arch/arm/mach-mx5/mx53_loco.c
+--- linux-2.6.35.3-ecs/arch/arm/mach-mx5/mx53_loco.c	2012-11-07 08:58:28.796875000 +0800
++++ linux-2.6.35.3-ecs-new/arch/arm/mach-mx5/mx53_loco.c	2012-11-07 11:05:03.281250000 +0800
+@@ -113,12 +113,11 @@
+ /*GPIO*/	//lhz
+ #define GPIO_4_0          (3*32 + 0)      /*GPIO_4_0*/		//SHDN
+ #define GPIO_4_1          (3*32 + 1)      /*GPIO_4_1*/		//MUTE
+-#define GPIO_4_2          (3*32 + 2)      /*GPIO_4_2*/		
+-#define GPIO_4_4          (3*32 + 4)      /*GPIO_4_3*/
+ #define GPIO_4_17          (3*32 + 17)      /*GPIO_4_17*/
+ #define GPIO_4_5          (3*32 + 5)      /*GPIO_4_5*/
+ 
+-
++#define CSPI_UART6_IRQ          (3*32 + 2)      /* GPIO_4_2 */
++#define CSPI_UART7_IRQ          (3*32 + 4)      /* GPIO_4_4 */
+ 
+ #define DISP0_RESET			(4*32 + 0)	/* GPIO_5_0 */
+ 
+@@ -613,34 +612,47 @@
+ 	.get_pins = sii902x_get_pins,
+ 	.put_pins = sii902x_put_pins,
+ };
++/*max3100 cspi @yuhui*/
++static struct mxc_spi_master mxcspi3_data = {
++	.maxchipselect = 4,
++	.spi_version = 7,
++	.chipselect_active = NULL,
++	.chipselect_inactive = NULL,
++};
+ 
+-/*max3100 driver init*/					//lhz
+-static struct plat_max3100 max3100_plat_data = {
+-
+-	 .loopback = 0,
+-	 .crystal = 0,
+-	 .poll_time = 100,
++static struct plat_max3100 max3100_uart6_plat_data = {
++ .loopback = 0,
++ .crystal = 0,
++ .poll_time = 100,
+  };
+ 
+-static struct spi_board_info mxc_spi_board_device[] __initdata = {
+-
+-	{
+-	 .modalias	= "max3100-0",
+-	 .platform_data	= &max3100_plat_data,
+-	 .irq		= gpio_to_irq(GPIO_4_2),//由GPIO 提供
+-	 .max_speed_hz	= 5*1000*1000,
+-	 .chip_select	= 0,//两个spi转串口，片选为0/1
+-	 },
+- 	{
+-	 .modalias	= "max3100-1",
+-	 .platform_data	= &max3100_plat_data,
+-	 .irq		= gpio_to_irq(GPIO_4_4),//由GPIO 提?
+-	 .max_speed_hz	= 5*1000*1000,
+-	 .chip_select	= 1,//两个spi转串口，片选为0/1
+-	 },
++static struct plat_max3100 max3100_uart7_plat_data = {
++ .loopback = 0,
++ .crystal = 0,
++ .poll_time = 100,
+  };
+-
+-
++ 
++static struct spi_board_info spi_uart_board_info[] __initdata = {
++ {
++ .modalias	= "max3100",
++ .platform_data	= &max3100_uart6_plat_data,
++ .irq		= gpio_to_irq(CSPI_UART6_IRQ),
++ .max_speed_hz	= 4*1000*1000,
++ .bus_num = 3,
++ .chip_select	= 0,	
++ .mode = SPI_MODE_0,
++ },
++ {
++ .modalias	= "max3100",
++ .platform_data	= &max3100_uart7_plat_data,
++ .irq		= gpio_to_irq(CSPI_UART7_IRQ),
++ .max_speed_hz	= 4*1000*1000,
++ .bus_num = 3,
++ .chip_select	= 1,
++ .mode = SPI_MODE_0,
++ },
++ };
++ 
+ 
+ static struct imxi2c_platform_data mxci2c_data = {
+        .bitrate = 100000,
+@@ -843,7 +855,7 @@
+ 
+ static struct mxc_spi_master mxcspi1_data = {
+ 	.maxchipselect = 4,
+-	.spi_version = 7,//23,
++	.spi_version = 23,
+ 	.chipselect_active = NULL,
+ 	.chipselect_inactive = NULL,
+ };
+@@ -1245,8 +1257,10 @@
+ 		clk_put(mxc_asrc_data.asrc_audio_clk);
+ 		mxc_register_device(&mxc_asrc_device, &mxc_asrc_data);
+ 	}
+-	spi_register_board_info(mxc_spi_board_device,
+-				ARRAY_SIZE(mxc_spi_board_device));//spi dev  max3100  //lhz
++	mxc_register_device(&mxcspi3_device, &mxcspi3_data);
++	spi_register_board_info(spi_uart_board_info,
++				ARRAY_SIZE(spi_uart_board_info));
++				
+ 	i2c_register_board_info(0, mxc_i2c0_board_info,
+ 				ARRAY_SIZE(mxc_i2c0_board_info));
+ 	i2c_register_board_info(1, mxc_i2c1_board_info,
+diff -Naur linux-2.6.35.3-ecs/drivers/serial/max3100.c linux-2.6.35.3-ecs-new/drivers/serial/max3100.c
+--- linux-2.6.35.3-ecs/drivers/serial/max3100.c	2012-11-07 09:06:20.234375000 +0800
++++ linux-2.6.35.3-ecs-new/drivers/serial/max3100.c	2012-11-07 11:40:19.156250000 +0800
+@@ -199,10 +199,10 @@
+ 	struct spi_transfer tran = {
+ 		.tx_buf = &etx,
+ 		.rx_buf = &erx,
+-		.len = 2,
++		.len = 1,
+ 	};
+ 
+-	etx = cpu_to_be16(tx);
++	etx = cpu_to_le16(tx);
+ 	spi_message_init(&message);
+ 	spi_message_add_tail(&tran, &message);
+ 	status = spi_sync(s->spi, &message);
+@@ -210,7 +210,7 @@
+ 		dev_warn(&s->spi->dev, "error while calling spi_sync\n");
+ 		return -EIO;
+ 	}
+-	*rx = be16_to_cpu(erx);
++	*rx = le16_to_cpu(erx);
+ 	s->tx_empty = (*rx & MAX3100_T) > 0;
+ 	dev_dbg(&s->spi->dev, "%04x - %04x\n", tx, *rx);
+ 	return 0;
+diff -Naur linux-2.6.35.3-ecs/drivers/spi/spi.c linux-2.6.35.3-ecs-new/drivers/spi/spi.c
+--- linux-2.6.35.3-ecs/drivers/spi/spi.c	2012-11-07 09:06:22.203125000 +0800
++++ linux-2.6.35.3-ecs-new/drivers/spi/spi.c	2012-11-07 11:39:24.296875000 +0800
+@@ -648,7 +648,7 @@
+ 	}
+ 
+ 	if (!spi->bits_per_word)
+-		spi->bits_per_word = 8;
++		spi->bits_per_word = 16;//spi->bits_per_word = 8;
+ 
+ 	status = spi->master->setup(spi);
+ 
+diff -Naur linux-2.6.35.3-ecs/drivers/video/mxc/ldb.c linux-2.6.35.3-ecs-new/drivers/video/mxc/ldb.c
+--- linux-2.6.35.3-ecs/drivers/video/mxc/ldb.c	2012-11-07 09:07:30.312500000 +0800
++++ linux-2.6.35.3-ecs-new/drivers/video/mxc/ldb.c	2012-11-07 11:38:00.875000000 +0800
+@@ -117,7 +117,7 @@
+ struct fb_videomode mxcfb_ldb_modedb[] = {
+ 	{
+ 	 //"1080P60", 60, 1920, 1080, 7692,
+-	 "1080P60", 60, 1280, 1024, 7692,
++	 "1080P60", 30, 1280, 1024, 7692,
+ 	 100, 40,
+ 	 30, 3,
+ 	 10, 2,
+@@ -434,8 +434,8 @@
+ {
+ 	int ipu_di = 0;
+ 	struct clk *di_clk, *ldb_clk_parent;
+-	unsigned long ldb_clk_prate = 455000000;
+-
++//	unsigned long ldb_clk_prate = 455000000;
++	unsigned long ldb_clk_prate = 528080000;
+ 	fbi->mode = (struct fb_videomode *)fb_match_mode(&fbi->var,
+ 			&fbi->modelist);
+ 	if (!fbi->mode) {
+@@ -516,7 +516,7 @@
+ 		switch (ldb.chan_mode_opt) {
+ 		case LDB_SIN_DI0:
+ 			ldb.ldb_di_clk[0] = clk_get(g_ldb_dev, "ldb_di0_clk");
+-			clk_set_rate(ldb.ldb_di_clk[0], ldb_clk_prate/7);
++			clk_set_rate(ldb.ldb_di_clk[0], ldb_clk_prate/7*2);
+ 			if (ldb.blank[0] == FB_BLANK_UNBLANK &&
+ 			    clk_get_usecount(ldb.ldb_di_clk[0]) == 0)
+ 				clk_enable(ldb.ldb_di_clk[0]);
+@@ -524,7 +524,7 @@
+ 			break;
+ 		case LDB_SIN_DI1:
+ 			ldb.ldb_di_clk[1] = clk_get(g_ldb_dev, "ldb_di1_clk");
+-			clk_set_rate(ldb.ldb_di_clk[1], ldb_clk_prate/7);
++			clk_set_rate(ldb.ldb_di_clk[1], ldb_clk_prate/7*2);
+ 			if (ldb.blank[1] == FB_BLANK_UNBLANK &&
+ 			    clk_get_usecount(ldb.ldb_di_clk[1]) == 0)
+ 				clk_enable(ldb.ldb_di_clk[1]);
+@@ -533,14 +533,14 @@
+ 		case LDB_SEP:
+ 			if (ipu_di == 0) {
+ 				ldb.ldb_di_clk[0] = clk_get(g_ldb_dev, "ldb_di0_clk");
+-				clk_set_rate(ldb.ldb_di_clk[0], ldb_clk_prate/7);
++				clk_set_rate(ldb.ldb_di_clk[0], ldb_clk_prate/7*2);
+ 				if (ldb.blank[0] == FB_BLANK_UNBLANK &&
+ 				    clk_get_usecount(ldb.ldb_di_clk[0]) == 0)
+ 					clk_enable(ldb.ldb_di_clk[0]);
+ 				clk_put(ldb.ldb_di_clk[0]);
+ 			} else {
+ 				ldb.ldb_di_clk[1] = clk_get(g_ldb_dev, "ldb_di1_clk");
+-				clk_set_rate(ldb.ldb_di_clk[1], ldb_clk_prate/7);
++				clk_set_rate(ldb.ldb_di_clk[1], ldb_clk_prate/7*2);
+ 				if (ldb.blank[1] == FB_BLANK_UNBLANK &&
+ 				    clk_get_usecount(ldb.ldb_di_clk[1]) == 0)
+ 					clk_enable(ldb.ldb_di_clk[1]);
+@@ -552,10 +552,10 @@
+ 			ldb.ldb_di_clk[0] = clk_get(g_ldb_dev, "ldb_di0_clk");
+ 			ldb.ldb_di_clk[1] = clk_get(g_ldb_dev, "ldb_di1_clk");
+ 			if (ldb.chan_mode_opt == LDB_DUL_DI0) {
+-				clk_set_rate(ldb.ldb_di_clk[0], ldb_clk_prate/7);
++				clk_set_rate(ldb.ldb_di_clk[0], ldb_clk_prate/7*2);
+ 			} else {
+-				clk_set_rate(ldb.ldb_di_clk[0], 2*ldb_clk_prate/7);
+-				clk_set_rate(ldb.ldb_di_clk[1], 2*ldb_clk_prate/7);
++				clk_set_rate(ldb.ldb_di_clk[0], 2*ldb_clk_prate/7*2);
++				clk_set_rate(ldb.ldb_di_clk[1], 2*ldb_clk_prate/7*2);
+ 			}
+ 			if (ldb.blank[0] == FB_BLANK_UNBLANK) {
+ 				if (clk_get_usecount(ldb.ldb_di_clk[0]) == 0)
+@@ -571,10 +571,10 @@
+ 			ldb.ldb_di_clk[0] = clk_get(g_ldb_dev, "ldb_di0_clk");
+ 			ldb.ldb_di_clk[1] = clk_get(g_ldb_dev, "ldb_di1_clk");
+ 			if (ldb.chan_mode_opt == LDB_DUL_DI1) {
+-				clk_set_rate(ldb.ldb_di_clk[1], ldb_clk_prate/7);
++				clk_set_rate(ldb.ldb_di_clk[1], ldb_clk_prate/7*2);
+ 			} else {
+-				clk_set_rate(ldb.ldb_di_clk[0], 2*ldb_clk_prate/7);
+-				clk_set_rate(ldb.ldb_di_clk[1], 2*ldb_clk_prate/7);
++				clk_set_rate(ldb.ldb_di_clk[0], 2*ldb_clk_prate/7*2);
++				clk_set_rate(ldb.ldb_di_clk[1], 2*ldb_clk_prate/7*2);
+ 			}
+ 			if (ldb.blank[1] == FB_BLANK_UNBLANK) {
+ 				if (clk_get_usecount(ldb.ldb_di_clk[0]) == 0)

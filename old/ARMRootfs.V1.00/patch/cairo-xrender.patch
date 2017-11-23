@@ -1,0 +1,21 @@
+diff -Naur cairo-1.12.8//src/cairo-xlib-xrender-private.h cairo-1.12.8-new//src/cairo-xlib-xrender-private.h
+--- cairo-1.12.8//src/cairo-xlib-xrender-private.h	2011-03-27 17:28:04.000000000 +0800
++++ cairo-1.12.8-new//src/cairo-xlib-xrender-private.h	2012-12-01 15:39:42.296414621 +0800
+@@ -96,6 +96,8 @@
+ #define PictOpBlendMaximum			    0x3e
+ #endif
+ 
++#ifndef _XRENDER_H_
++
+ #if !HAVE_XRENDERCREATELINEARGRADIENT
+ #define XRenderCreateLinearGradient			_int_consume
+ 
+@@ -127,7 +129,7 @@
+     XFixed angle; /* in degrees */
+ } XConicalGradient;
+ #endif
+-
++#endif
+ 
+ #else /* !CAIRO_HAS_XLIB_XRENDER_SURFACE */
+ 

@@ -1,0 +1,16 @@
+diff -Naur libXfont-1.4.5//xfont.pc.in libXfont-1.4.5-new//xfont.pc.in
+--- libXfont-1.4.5//xfont.pc.in	2012-03-03 02:05:21.000000000 +0800
++++ libXfont-1.4.5-new//xfont.pc.in	2012-12-02 13:44:41.180022079 +0800
+@@ -6,8 +6,8 @@
+ Name: Xfont
+ Description: X font Library
+ Version: @VERSION@
+-Requires: xproto fontsproto
+-Requires.private: fontenc @FREETYPE_REQUIRES@
++Requires: xproto fontsproto fontenc @FREETYPE_REQUIRES@
++Requires.private: 
+ Cflags: -I${includedir}
+-Libs: -L${libdir} -lXfont
+-Libs.private: @Z_LIBS@ -lm
++Libs: -L${libdir} -lXfont @Z_LIBS@
++Libs.private:  -lm

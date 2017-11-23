@@ -1,0 +1,530 @@
+#!/bin/sh
+
+#作废的代码
+
+stamp_dir=$TEMPDIR/.stamp
+rm -rf $stamp_dir 1>/dev/null 2>/dev/null
+mkdir -p $stamp_dir 1>/dev/null 2>/dev/null
+export current_task=""
+    
+run_task()
+{
+	if [[ $# != 2 ]]; then
+		echo "参数个数为$#，不符合要求"
+		echo "usage: run_task <task_name>, <func_name>"
+		exit -1;
+	fi;
+	TASKNAME=$1
+	ROUTINNAME=$2
+	begin_task $TASKNAME
+	if [[ 0 != $? ]]; then
+	
+		unset CC
+		unset CXX
+		unset CPP
+		unset ACLOCAL
+		cd $ROOTDIR
+		initenv
+        mkdir -p $TEMPDIR/dist 1>/dev/null 2>&1
+		echo "任务<$TASKNAME> ==> 开始执行"
+		$ROUTINNAME
+		end_task $current_task
+        rm -rf -p $TEMPDIR/dist 1>/dev/null 2>&1
+	fi;
+}
+
+begin_task()
+{
+	export task_name="$1"
+
+	if [ -e "$stamp_dir/$task_name.stamp" ]; then
+#		echo " ==>任务 <$current_task> 已完成, 不予执行。如需重新运行，请删除对应stamp文件"
+		return 0;
+	else
+		push_task $task_name
+		return $?
+	fi;
+}
+
+#push_task <task_name>
+push_task()
+{
+    set +e;
+	if [ ! -e $stamp_dir/.tasklist ]; then
+		> $stamp_dir/.tasklist
+	fi;
+
+    echo "Push task $1"	
+    read _n
+    
+	task_name=$1
+	grep "$task_name" $stamp_dir/.tasklist #1>/dev/null 2>/dev/null
+	if [[ $? != 0 ]]; then
+		echo "$task_name" >> $stamp_dir/.tasklist
+		export current_task=$task_name
+		
+		echo +----------------------------
+		cat $stamp_dir/.tasklist
+		echo +----------------------------
+		
+		read _n
+		
+		return 1;
+	else
+		echo 不能同一任务重复运行$task_name, 当前调用栈为
+		
+		echo +----------------------------
+		cat $stamp_dir/.tasklist
+		echo +----------------------------
+		read _n
+		
+		exit;
+	fi;	
+}
+
+pop_task()
+{
+	# 去掉尾部空行
+	grep "^[^$]" $stamp_dir/.tasklist > $stamp_dir/.tasklist.tmp 
+	rm $stamp_dir/.tasklist
+	mv $stamp_dir/.tasklist.tmp $stamp_dir/.tasklist
+
+	sed -i '$d' $stamp_dir/.tasklist		# 删除最后一行	
+
+	export current_task=`tail -n 1 $stamp_dir/.tasklist`
+	#echo "current_task=$current_task"
+	echo +----------------------------
+	cat $stamp_dir/.tasklist
+	echo +----------------------------
+}
+
+# endtask <task_name>
+end_task()
+{
+	if [ "" != "$current_task" ]; then
+		> $stamp_dir/$current_task.stamp
+		echo "任务<$current_task> ==> 成功完成"
+		cat $stamp_dir/.tasklist
+		pop_task
+		return 0;
+	fi;
+	unset current_task
+	
+	echo "out"
+}
+
+
+
+hide_native0()
+{
+	echo "屏蔽主机开发环境"
+	exit;
+#	sudo mv /usr/include /usr/include-native 1>/dev/null 2>/dev/null
+#	sudo mv /usr/lib/pkgconfig /usr/lib/pkgconfig-native 1>/dev/null 2>/dev/null
+	hide_native_pkgconfig
+    hide_native_autoconf
+    hide_native_header
+    
+	initenv
+	hash -r
+}
+reset_native_env()
+{
+	export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+	export PATH=/usr/local/arm/arm-yiab-linux-gnueabi/usr/bin:$PATH
+	
+	unset CFLAGS
+	unset CXXFLAGS
+	unset LDFLAGS
+	hash -r
+
+}
+restore_native0()
+{
+	echo "恢复主机开发环境"
+#	sudo mv /usr/include-native /usr/include 1>/dev/null 2>/dev/null
+	restore_native_pkgconfig
+	restore_native_autoconf
+	restore_native_header
+
+#	reset_native_env
+    hash -r
+}
+
+hide_native_pkgconfig()
+{
+	echo "屏蔽主机开发环境(ONLY PKGCONFIG)"
+	sudo mv /usr/lib/pkgconfig /usr/lib/pkgconfig-native 1>/dev/null 2>/dev/null
+	sudo mv /usr/share/pkgconfig /usr/share/pkgconfig-native 1>/dev/null 2>/dev/null
+	
+	# pkg-config设置
+	export PKG_CONFIG_PATH=$SDKDIR/usr/lib/pkgconfig:$SDKDIR/usr/share/pkgconfig
+	export PKG_CONFIG_SYSROOT_DIR=$SDKDIR
+	export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
+	export PKG_CONFIG_ALLOW_SYSTEM_LIBS=1
+	
+	hash -r
+}
+
+restore_native_pkgconfig()
+{
+	echo "恢复主机开发环境(ONLY PKGCONFIG)"
+	sudo mv /usr/lib/pkgconfig-native /usr/lib/pkgconfig 1>/dev/null 2>/dev/null
+	sudo mv /usr/share/pkgconfig-native /usr/share/pkgconfig 1>/dev/null 2>/dev/null
+
+	unset PKG_CONFIG_PATH
+	unset PKG_CONFIG_SYSROOT_DIR
+	unset PKG_CONFIG_ALLOW_SYSTEM_CFLAGS
+	unset PKG_CONFIG_ALLOW_SYSTEM_LIBS
+	
+	hash -r
+}
+
+restore_native_autoconf()
+{
+	_cur_autoconf=`which autoreconf`
+	
+	if [[ $_cur_autoconf == "$SDKDIR/usr/bin/autoreconf" ]]; then
+	    echo "恢复主机开发环境(ONLY AUTOCONF)"
+
+	    cd $SDKDIR/usr/bin
+	    mv aclocal aclocal-hide 1>/dev/null 2>/dev/null
+	    mv aclocal-1.12 aclocal-1.12-hide 1>/dev/null 2>/dev/null
+	    mv autoconf autoconf-hide 1>/dev/null 2>/dev/null
+	    mv autoheader autoheader-hide 1>/dev/null 2>/dev/null
+	    mv autom4te autom4te-hide 1>/dev/null 2>/dev/null
+	    mv automake automake-hide 1>/dev/null 2>/dev/null
+	    mv automake-1.12 automake-1.12-hide 1>/dev/null 2>/dev/null
+	    mv autoreconf autoreconf-hide 1>/dev/null 2>/dev/null
+	    mv autoscan autoscan-hide 1>/dev/null 2>/dev/null
+	    mv autoupdate autoupdate-hide 1>/dev/null 2>/dev/null
+	    
+	    mv libtool libtool-hide 1>/dev/null 2>/dev/null
+	    mv libtoolize libtoolize-hide 1>/dev/null 2>/dev/null
+
+	    cd - 1>/dev/null 2>/dev/null
+	    
+	    sudo mv /usr/share/native-aclocal /usr/share/aclocal 1>/dev/null 2>/dev/null
+   	    unset _surpress_echo
+	fi;
+	unset _cur_autoconf
+	
+	hash -r
+}
+hide_native_autoconf()
+{
+    if [ ! -e "$SDKDIR/usr/bin/autoreconf-hide" ]; then
+        echo "不存在$SDKDIR/usr/bin/autoreconf-hide"
+        return;
+    fi;
+    
+	_cur_autoconf=`which autoreconf`
+	if [[ $_cur_autoconf != "$SDKDIR/usr/bin/autoreconf" ]]; then
+	    echo "隐藏主机开发环境(ONLY AUTOCONF)"
+	    
+	    cd $SDKDIR/usr/bin
+	    mv aclocal-hide aclocal 1>/dev/null 2>/dev/null
+	    mv aclocal-1.12-hide aclocal-1.12 1>/dev/null 2>/dev/null
+	    mv autoconf-hide autoconf 1>/dev/null 2>/dev/null
+	    mv autoheader-hide autoheader 1>/dev/null 2>/dev/null
+	    mv autom4te-hide autom4te 1>/dev/null 2>/dev/null
+	    mv automake-hide automake 1>/dev/null 2>/dev/null
+	    mv automake-1.12-hide automake-1.12 1>/dev/null 2>/dev/null
+	    mv autoreconf-hide autoreconf 1>/dev/null 2>/dev/null
+	    mv autoscan-hide autoscan 1>/dev/null 2>/dev/null
+	    mv autoupdate-hide autoupdate 1>/dev/null 2>/dev/null
+	    mv libtool-hide libtool 1>/dev/null 2>/dev/null
+	    mv libtoolize-hide libtoolize 1>/dev/null 2>/dev/null
+	    
+	    sudo mv /usr/share/aclocal /usr/share/native-aclocal  1>/dev/null 2>/dev/null
+	    cd -
+   	fi;
+   	unset _cur_autoconf
+   	
+   	hash -r
+}
+
+hide_native_header()
+{
+	if [ -d /usr/include ]; then
+		if [ ! -d /usr/include-native ]; then
+			sudo mkdir /usr/include-native
+		fi;
+		sudo mv /usr/include/* /usr/include-native 1>/dev/null 2>/dev/null
+	fi;
+#	for i in /usr/include-native/* ; do
+#		filename=`basename $i`
+#		if [ ! -e $NATIVETOOL/include/$filename ]; then
+#			#echo "--> 链接主机文件: " $i
+#			ln -s $i $NATIVETOOL/include/$filename
+#		fi;
+#	done
+#	sudo mv /usr/lib/pkgconfig /usr/lib/pkgconfig-native 1>/dev/null 2>/dev/null
+    hash -r
+}
+
+restore_native_header()
+{
+#	for i in $NATIVETOOL/include/* ; do
+#		if [ -h $i ]; then
+#			rm -rf $i
+#		fi;
+#	done
+	if [ -d /usr/include-native ]; then
+		if [ ! -d /usr/include ]; then
+			sudo mkdir /usr/include
+		fi;
+		
+		sudo mv /usr/include-native/* /usr/include
+		sudo rm -rf /usr/include-native
+	fi;
+#	sudo mv /usr/lib/pkgconfig-native /usr/lib/pkgconfig
+    hash -r
+}
+
+
+
+##########################################################################################
+# deploy <pkg_name> 
+# 	DEPLOY_DIST="/usr/bin /usr/lib /usr/share/alsa"
+#	PRE_REMOVE_LIST="/usr/lib/*.la"
+#	REMOVE_LIST="/usr/lib/*.la"
+# 例如：
+#	deploy $LIBALSAFILE
+##########################################################################################
+deploy_old()
+{
+	PKGNAME=$1
+	if [ -z "$_deploy_pass1_dir" ]; then         # 内部变量_deploy_pass1_dir为空
+	    _deploy_pass1_dir=$SDKDIR
+	fi;
+	if [ -z "$_deploy_pass2_dir" ]; then
+        _deploy_pass2_dir=$INSTDIR
+    fi;
+	
+	echo "-----> DEPLOYING $PKGNAME: dist:{$DEPLOY_DIST} pre-remove:{$PRE_REMOVE_LIST} remove:{$REMOVE_LIST}"
+	
+	_surpress_echo="yes"
+	# 1. 解压
+	exec_cmd "sudo mkdir -p $TEMPDIR/.cacheout"
+	exec_cmd "sudo tar xf $CACHEDIR/$PKGNAME.tar.gz -C $TEMPDIR/.cacheout"
+	
+	# 要删除的内容
+	read -a list <<<$PRE_REMOVE_LIST
+    for (( i=0; i<${#list[@]}; i++)); do
+		exec_cmd "rm -rf $TEMPDIR/.cacheout/.${list[$i]}"
+	done;
+	
+	# 2. 完整安装到SDKDIR
+	exec_cmd "sudo cp -Rdpf --remove-destination $TEMPDIR/.cacheout/* $_deploy_pass1_dir"
+	
+	# REMOVE_LIST
+	read -a list <<<$REMOVE_LIST
+    for (( i=0; i<${#list[@]}; i++)); do
+		exec_cmd "sudo rm -rf $TEMPDIR/.cacheout/.${list[$i]}"
+	done;
+	
+	# 3. 发布到dist
+    if [ "$_deploy_pass2_dir"!="skip" ]; then
+	    read -a list <<<$DEPLOY_DIST
+        for (( i=0; i<${#list[@]}; i++)); do
+		    exec_cmd "sudo mkdir -p $INSTDIR${list[$i]}"
+		    exec_cmd "sudo /bin/cp -Rdpf --remove-destination $TEMPDIR/.cacheout/.${list[$i]}/* $INSTDIR${list[$i]}"
+	    done;
+    fi;
+    	
+	exec_cmd "sudo rm -rf $TEMPDIR/.cacheout" 
+ 	unset PRE_REMOVE_LIST
+	unset REMOVE_LIST
+	unset DEPLOY_DIST
+	unset PKGNAME
+    unset _surpress_echo
+    unset _deploy_pass1_dir
+    unset _deploy_pass2_dir
+}
+
+# 发布到host主机的内容
+deploy_tools()
+{
+    _deploy_pass1_dir=$TOOLSDIR
+    _deploy_pass2_dir="skip"
+    
+    deploy $1
+    
+    unset _deploy_pass1_dir
+    unset _deploy_pass2_dir
+}
+
+
+strip_all()
+{
+#	echo "find $INSTDIR/ -name '*' -exec $MY_TARGET-strip {} \;"
+#	find $INSTDIR/bin -name '*' -exec $MY_TARGET-strip {} \; 1>/dev/null 2>&1
+#	find $INSTDIR/usr/bin -name '*' -exec $MY_TARGET-strip {} \; 1>/dev/null 2>&1
+#	find $INSTDIR/lib -name '*.so*' -exec $MY_TARGET-strip {} \; 1>/dev/null 2>&1
+#	find $INSTDIR/lib/udev -name '*.so*' -exec $MY_TARGET-strip {} \; 1>/dev/null 2>&1
+#	find $INSTDIR/usr/lib -name '*.so*' -exec $MY_TARGET-strip {} \; 1>/dev/null 2>&1
+#	find $INSTDIR/usr/local/ -name '**' -exec $MY_TARGET-strip {} \; 1>/dev/null 2>&1
+	echo "Striping ..."
+	find $INSTDIR/ -name '*' -exec $MY_TARGET-strip {} \; 1>/dev/null 2>&1
+
+#	$MY_TARGET-strip --strip-unneeded $INSTDIR/etc/init.d/*
+#	$MY_TARGET-strip --strip-unneeded $INSTDIR/bin/*
+#	$MY_TARGET-strip --strip-unneeded $INSTDIR/sbin/*
+#	$MY_TARGET-strip --strip-unneeded $INSTDIR/usr/bin/*
+#	$MY_TARGET-strip --strip-unneeded $INSTDIR/usr/sbin/*
+#	$MY_TARGET-strip --strip-debug $INSTDIR/lib/*.so
+#	$MY_TARGET-strip --strip-debug $INSTDIR/usr/lib/*.so
+}
+
+__useless_code()
+{
+    #临时性任务
+    exec_cmd "sudo cp $BUILDINDIR/mount_gisserver.sh $INSTDIR/etc"
+    cd $INSTDIR
+    echo "正在打包etc.tar.bz2"
+    sudo rm -f $dist_shared_path/etc.tar.bz2
+    sudo tar jcf $dist_shared_path/etc.tar.bz2 etc
+
+
+    # 打包
+    echo "正在打包到$dist_shared_path/boot.tar.bz2"
+    exec_cmd "cd $BOOTDIR"
+    exec_cmd "sudo chown -hR root:root ."
+    exec_cmd "sudo rm -f $dist_shared_path/boot.tar.bz2"
+    exec_cmd "sudo tar jcf $dist_shared_path/boot.tar.bz2 ."
+
+    echo "正在打包到$dist_shared_path/rootfs.tar.bz2"
+    cd $INSTDIR
+    #sudo chown -hR root:root .
+    sudo rm -f $dist_shared_path/rootfs.tar.bz2
+    sudo tar jcf $dist_shared_path/rootfs.tar.bz2 .
+
+    sudo umount $TEMPDIR
+
+    beep_succ
+    exit;
+    # 1. 基本系统/驱动
+    #build_busybox
+    #strip_all
+}
+
+
+compile_native_pkgconfig()
+{
+    echo "+++ 构建 $PKGCONFIGFILE +++ "
+	if [ ! -e $CACHEDIR/native-$PKGCONFIGFILE.tar.gz ]; then
+		rm -rf $TEMPDIR/$PKGCONFIGFILE
+		#CFLAGS="$CFLAGS $CROSS_FLAGS -O2"
+		#unset LDFLAGS
+		#unset CFLAGS
+		dispenv
+		prepare $PKGCONFIGFILE 
+		
+		exec_cmd "./configure --prefix=$SDKDIR/usr"
+		exec_build "install DESTDIR=$CACHEDIR/pkgconfig"
+		
+		exec_cmd "cd $CACHEDIR/pkgconfig/$SDKDIR"
+		exec_cmd "tar czf $CACHEDIR/native-$PKGCONFIGFILE.tar.gz ."
+		exec_cmd "rm -rf $CACHEDIR/pkgconfig $TEMPDIR/$PKGCONFIGFILE"
+	fi;
+	
+	PRE_REMOVE_LIST=""
+	REMOVE_LIST=""
+	DEPLOY_DIST=""
+	deploy native-$PKGCONFIGFILE
+	
+    export PKG_CONFIG_SYSROOT_DIR=$SDKDIR
+}
+build_native_pkgconfig()
+{
+    build_native_glib
+	run_task "构建native-$PKGCONFIGFILE" "compile_native_pkgconfig"
+}
+
+    
+#NATIVE_PREREQUIRST+=" tcl-dev tk-dev"
+#Python build finished, but the necessary bits to build these modules were not found:
+#_bsddb             _curses            _curses_panel   
+#_sqlite3           _ssl               _tkinter        
+#bsddb185           bz2                dbm             
+#dl                 gdbm               imageop         
+#linuxaudiodev      ossaudiodev        readline        
+#sunaudiodev        zlib
+prepare_native_python2_7()
+{
+    run_task "准备native_python2_7" "compile_native_python2_7"
+}
+compile_native_python2_7()
+{
+    if [ ! -e $CACHEDIR/native-$PYTHON27FILE.tar.gz ]; then
+		rm -rf $TEMPDIR/$PYTHON27FILE
+		
+		init_native_env           # 恢复主机环境编译
+		dispenv
+		
+		prepare $PYTHON27FILE
+		exec_cmd "mkdir -p $TEMPDIR/native-python-build"
+		exec_cmd "cd $TEMPDIR/native-python-build"		
+		exec_cmd "../$PYTHON27FILE/configure "
+		exec_build "install DESTDIR=$CACHEDIR/native-$PYTHON27FILE"
+
+		exec_cmd "cd $CACHEDIR/native-$PYTHON27FILE/.$SDKDIR/"
+		exec_cmd "tar czf $CACHEDIR/native-$PYTHON27FILE.tar.gz ."
+		exec_cmd "cd $ROOTDIR"
+		exec_cmd "rm -rf $CACHEDIR/native-$PYTHON27FILE $TEMPDIR/$PYTHON27FILE $TEMPDIR/native-python-build"
+	fi;
+	
+	PRE_REMOVE_LIST=""
+	REMOVE_LIST=""
+	DEPLOY_DIST=""
+	deploy native-$PYTHON27FILE
+}
+
+build_python_xxx()
+{
+	export PYTHONPATH=$SDKDIR/usr/lib/python2.7
+	if [ ! -e $CACHEDIR/$PYTHON27FILE.tar.gz ]; then
+		rm -rf $TEMPDIR/$PYTHON27FILE
+        resetenv
+		dispenv
+		prepare $PYTHON27FILE 
+		
+#		cat << _MY_EOF_ > config.site
+#ac_cv_file__dev_ptmx=no
+#_MY_EOF_
+
+        exec_cmd "mkdir -p $TEMPDIR/python-build"
+		exec_cmd "cd $TEMPDIR/python-build"		
+		exec_cmd "../$PYTHON27FILE/configure --prefix=/usr --host=$MY_TARGET --build=x86_64-linux-gnu --enable-optimizations --enable-shared --disable-ipv6 ac_cv_file__dev_ptmx=no ac_cv_file__dev_ptc=no"
+		!!!error here!!!
+		exec_build "install DESTDIR=$CACHEDIR/$PYTHON27FILE"
+				
+		pack_cache $PYTHON27FILE
+	fi;
+	
+	PRE_REMOVE_LIST=""
+	REMOVE_LIST=""
+	DEPLOY_DIST=""
+	deploy $PYTHON27FILE
+	
+	exit;
+}
+
+removela()
+{
+	DIRNAME=$1
+	
+	echo "+++ calling removela($DIRNAME)"
+	
+	if [ ! -d $DIRNAME ]; then
+		echo "目录$DIRNAME不存在"
+		exit 1;
+	else
+		echo "here"
+		cd $DIRNAME
+		echo "PWD=$PWD"
+		find -name "*.la" -delete
+	fi;
+}
+

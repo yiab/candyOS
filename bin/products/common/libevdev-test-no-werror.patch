@@ -1,0 +1,12 @@
+diff -Naur libevdev-1.5.7/test/Makefile.am libevdev-1.5.7-new/test/Makefile.am
+--- libevdev-1.5.7/test/Makefile.am	2017-05-04 08:37:30.000000000 +0800
++++ libevdev-1.5.7-new/test/Makefile.am	2017-11-13 17:08:57.273143355 +0800
+@@ -10,7 +10,7 @@
+ AM_LDFLAGS =
+ 
+ test_compile_pedantic_SOURCES = test-compile-pedantic.c
+-test_compile_pedantic_CFLAGS = $(AM_CPPFLAGS) -pedantic -Werror -std=c89
++test_compile_pedantic_CFLAGS = $(AM_CPPFLAGS) -pedantic -std=c89
+ 
+ test_link_SOURCES = test-link.c
+ test_link_CFLAGS = -I$(top_srcdir)

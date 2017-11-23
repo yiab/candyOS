@@ -1,0 +1,11 @@
+--- gcc-4.7.0/gcc/gcc.c	2012-02-29 01:31:38.000000000 +0800
++++ gcc-4.7.0-new/gcc/gcc.c	2012-05-22 16:49:12.798571619 +0800
+@@ -3923,7 +3923,7 @@
+ 	      concat (tooldir_prefix, "lib", dir_separator_str, NULL),
+ 	      "BINUTILS", PREFIX_PRIORITY_LAST, 0, 1);
+ 
+-#if defined(TARGET_SYSTEM_ROOT_RELOCATABLE) && !defined(VMS)
++#if !defined(VMS)
+   /* If the normal TARGET_SYSTEM_ROOT is inside of $exec_prefix,
+      then consider it to relocate with the rest of the GCC installation
+      if GCC_EXEC_PREFIX is set.

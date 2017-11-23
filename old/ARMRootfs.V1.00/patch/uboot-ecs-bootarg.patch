@@ -1,0 +1,22 @@
+diff -Naur u-boot-ecs/include/configs/mx53_loco.h u-boot-ecs-bootarg/include/configs/mx53_loco.h
+--- u-boot-ecs/include/configs/mx53_loco.h	2012-10-25 13:44:25.000000000 +0800
++++ u-boot-ecs-bootarg/include/configs/mx53_loco.h	2012-11-05 13:14:35.142348065 +0800
+@@ -124,14 +124,14 @@
+ 			"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0"\
+ 		"bootcmd_net=run bootargs_base bootargs_nfs; "		\
+ 			"tftpboot ${loadaddr} ${kernel}; bootm\0"	\
+-		"bootargs_mmc=setenv bootargs ${bootargs} ip=192.168.0.1 "	\
+-			"root=/dev/mmcblk0p1 rootwait rw\0"		\
++		"bootargs_mmc=setenv bootargs ${bootargs} ip=none "	\
++			"root=/dev/mmcblk0p1 rootwait rw video=mxcdi0fb:RGB24,1080P60,bpp=16 ldb=di0,split di0_primary dmfc=3 gpu_nommu,gpu_memory=128M \0"		\
+ 		"bootcmd_mmc=run bootargs_base bootargs_mmc; "		\
+ 			"mmc dev 0; "					\
+ 			"mmc read ${loadaddr} 0x800 0x2800; bootm\0"	\
+ 		"bootcmd=run bootcmd_mmc\0"	\
+ 	\
+-
++	 
+ 
+ #define CONFIG_ARP_TIMEOUT	200UL
+
+ 

@@ -1,0 +1,18 @@
+****************************** NOTICE *****************************             
+You have seen this notice as you have enabled OTG driver for mx53 LOCO board    
+For mx53 loco board, the OTG function is unavailable due to hardware limitation 
+So, Only one usb function (device or host) can be available for certain image   
+Please config your kernel to disable OTG and the usb function you don't want toe
+And remain the other usb function you would like to use                         
+                                                                                
+Below OTG configs should be removed:                                            
+CONFIG_MXC_OTG, CONFIG_USB_OTG                                                  
+                                                                                
+Choose one of below configs for host or device function                         
+But DO NOT choose them together                                                 
+                                                                                
+OTG host config                                                                 
+CONFIG_USB_EHCI_ARC_OTG                                                         
+                                                                                
+OTG device config                                                               
+CONFIG_USB_GADGET   

@@ -1,0 +1,19 @@
+编译linux kernel时，
+
+CONFIG_DEVTMPFS=y
+CONFIG_HOTPLUG=y
+CONFIG_INOTIFY_USER=y
+CONFIG_NET=y
+CONFIG_PROC_FS=y
+CONFIG_SIGNALFD=y
+CONFIG_SYSFS=y
+CONFIG_SYSFS_DEPRECATED*=n
+CONFIG_UEVENT_HELPER_PATH=""
+
+其中DEVTMPFS很重要，否则lsusb不能识别设备
+
+=========================================
+libusb的调试开关是：LIBUSB_DEBUG
+LIBUSB_DEBUG=调试级别；
+
+但是DEBUG必须要编译时打开

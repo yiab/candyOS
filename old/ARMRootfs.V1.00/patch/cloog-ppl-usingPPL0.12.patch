@@ -1,0 +1,12 @@
+diff -uNr cloog-ppl-0.15.9/configure cloog-ppl-0.15.9-B/configure
+--- cloog-ppl-0.15.9/configure	2012-04-12 10:16:49.487592746 +0800
++++ cloog-ppl-0.15.9-B/configure	2012-04-12 10:17:30.955592550 +0800
+@@ -12684,7 +12684,7 @@
+ POLYHEDRAL_BACKEND=polylib
+ 
+ ppl_major_version=0
+-ppl_minor_version=10
++ppl_minor_version=12
+ 
+ 
+ 
