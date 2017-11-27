@@ -40,6 +40,7 @@ alias install="install -D"
 
 DBG="$TEMPDIR/log"
 WARN="$TEMPDIR/warn"
+NATIVE_PREREQUIRST='ccache autoconf automake pkgconfig  gettext libtool intltool'
 
 sudo rm -rf $DISTDIR $DBG $WARN 1>/dev/null 2>&1 1>/dev/null 2>&1
 mkdir -p $SDKDIR/usr/sbin $SDKDIR/usr/bin $SDKDIR/sbin $SDKDIR/bin $SDKDIR/usr/lib $SDKDIR/lib
@@ -64,9 +65,10 @@ if [ "n$2" == 'n--list' ]; then
     show_all_package
     exit;
 fi;
-#check_setting               # 检查编译依赖
+check_setting               # 检查编译依赖
 check_cross_setting         # 检查交叉编译器
 tick "代码检查"
+unset _surpress_echo
 
 #####################################
 # 复制所有产品文件
@@ -81,13 +83,6 @@ fi;
 #############################
 #  加载主机所需安装的软件包
 #############################
-echo "Checking prerequist package on native environment ... $NATIVE_PREREQUIRST"
-exec_cmd "sudo apt-get install -y $NATIVE_PREREQUIRST"
-unset _surpress_echo
-
-init_native_env
-dispenv
-
 init_rootfs()
 {
 	#必备的8个目录
@@ -110,10 +105,26 @@ init_rootfs()
     #	exec_cmd "cp -R $SRCDIR/etc-sample/* etc/"	
 }
 
+# 主机环境
+echo "==========================================="
+echo "+ 开始构建主机环境"
+echo "==========================================="
+_need_apt_install=''
+echo "Checking prerequist package on native environment ... $NATIVE_PREREQUIRST"
+for ntv_pkg in $NATIVE_PREREQUIRST; do
+    run_build0 native_${ntv_pkg}
+    if [ $? -ne 0 ]; then
+        _need_apt_install="${_need_apt_install} ${ntv_pkg}"
+    fi;
+done;
+_need_apt_install=`echo $_need_apt_install`
+if [ -n "$_need_apt_install" ]; then
+    exec_cmd "sudo apt-get install -y $_need_apt_install"
+fi;
+
+echo ""
 echo "==========================================="
 echo "+ 开始构建"
-echo "+ INSTDIR=$INSTDIR"
-echo "+ MY_TARGET=$MY_TARGET"
 echo "==========================================="
 
 ##### 执行构建任务

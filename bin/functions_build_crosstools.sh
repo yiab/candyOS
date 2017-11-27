@@ -1,8 +1,10 @@
 #!/bin/bash
 
+
+##############################
+# 编译 cross_autogen_env
 generate_custom cross_autogen_env prepare_cross_autogen \
     '--depends=cross_autoconf  cross_automake  cross_pkgconfig  cross_gettext  cross_libtool cross_intltool'
-    
 prepare_cross_autogen()
 {
     local do_nothing;
@@ -16,7 +18,7 @@ generate_script  cross_autoconf     $AUTOCONFFILE     \
     '--deploy-sdk=/'
 
 generate_script  native_autoconf     $AUTOCONFFILE     \
-    '--config=--prefix=/usr'       \
+    '--config=--prefix=$DEVDIR/usr'       \
     '--deploy-dev=/'
     
 ##############################
@@ -27,7 +29,7 @@ generate_script  cross_automake     $AUTOMAKEFILE     \
     '--deploy-sdk=/'
     
 generate_script  native_automake     $AUTOMAKEFILE     \
-    '--config=--prefix=/usr --disable-static'       \
+    '--config=--prefix=$DEVDIR/usr --disable-static'       \
     '--deploy-dev=/'
 
 ##############################
@@ -48,7 +50,7 @@ generate_script  cross_libtool     $LIBTOOLFILE     \
 # 编译 intltool-0.51.0
 INTLTOOL=intltool-0.51.0
 generate_script  native_intltool     $INTLTOOL     \
-    '--config=--prefix=/usr --disable-static'       \
+    '--config=--prefix=$DEVDIR/usr --disable-static'       \
     '--deploy-dev=/'
     
 generate_script  cross_intltool     $INTLTOOL     \
@@ -82,42 +84,51 @@ generate_script  native_ncurses     $NCURSESFILE     \
 
 generate_script  ncurses     $NCURSESFILE     \
     --make-before-install   \
-    '--config=--host=$MY_TARGET --prefix=/usr --without-ada --without-manpages --without-tests --without-progs'       \
-    '--deploy-sdk=/'
+    '--prescript=export CFLAGS="-fPIC -fpic"'   \
+    '--config=--host=$MY_TARGET --prefix=/usr --without-cxx --without-shared --without-ada --without-manpages --without-tests --without-progs'       \
+    '--deploy-sdk=/usr/include /usr/lib /usr/share'     
 
 generate_script  ncursesw     $NCURSESFILE     \
     --make-before-install   \
-    '--config=--host=$MY_TARGET --prefix=/usr --enable-widec --without-ada --without-manpages --without-tests --without-progs'       \
+    '--config=--host=$MY_TARGET --prefix=/usr --without-cxx --without-shared --enable-widec --without-ada --without-manpages --without-tests --without-progs'       \
     '--deploy-sdk=/'
 
 ##############################
 # 编译 gettext-0.19.8
 GETTEXT=gettext-0.19.8
-generate_script  cross_gettext     $GETTEXT     \
-    --build-native                 \
-    '--config=--prefix=$DEVDIR/usr --disable-static --without-emacs --without-git --disable-acl --disable-openmp --disable-java'       \
-    '--depends=native_expat native_ncurses' \
-    '--deploy-dev=/'    \
-    '--deploy-sdk=/usr/bin /usr/lib/gettext'
+generate_script  gettext     $GETTEXT     \
+    '--config=--prefix=/usr --host=$MY_TARGET --with-sysroot=$SDKDIR --disable-shared --without-emacs --without-git --disable-acl --disable-openmp --disable-java'       \
+    '--depends=expat ncurses' \
+    '--deploy-sdk=/usr/lib -/usr/share -/usr/bin'
 
+generate_script cross_gettext $GETTEXT  \
+    --build-native                 \
+    '--config=--prefix=$SDKDIR/usr --disable-shared --without-emacs --without-git --disable-acl --disable-openmp --disable-java'       \
+    '--depends=native_expat native_ncurses' \
+    '--deploy-sdk=/ -/usr/share' 
+    
 generate_script  native_gettext     $GETTEXT     \
     --build-native                 \
     '--config=--prefix=$DEVDIR/usr --disable-static --without-emacs --without-git --disable-acl --disable-openmp --disable-java'       \
     '--depends=native_expat native_ncurses' \
-    '--deploy-dev=/' \
-    '--deploy-sdk=/usr/bin /usr/lib/gettext'
+    '--deploy-dev=/ -/usr/share' 
 
 ##############################
 # 编译 Python
 PYTHON27FILE=Python-2.7.14
 generate_script     cross_python   $PYTHON27FILE                    \
-    --build-native                  \
-    '--depends=native_expat native_gettext'                         \
-    '--config=--prefix=/usr --with-system-expat --without-pydebug ' \
-    '--deploy-sdk=/usr/bin /usr/lib -/usr/lib/*.a'  
-    
+    '--depends=native_python expat cross_gettext'                         \
+    '--prescript=autoreconf -v --install --force'  \
+    --make-before-install     \
+    '--config=--host=$MY_TARGET --build=x86_64-pc-linux-gnu --target=$MY_TARGET --prefix=/usr --enable-optimizations --with-system-expat --without-pydebug --disable-ipv6 ac_cv_file__dev_ptmx=yes ac_cv_file__dev_ptc=no' \
+    '--deploy-sdk=/usr/bin /usr/include /usr/lib'   --debug
+
 generate_script     native_python   $PYTHON27FILE                    \
-    --build-native                                                  \
+    --build-native      \
     '--depends=native_expat native_gettext'                         \
-    '--config=--prefix=$DEVDIR/usr --with-system-expat --without-pydebug '                                 \
-    '--deploy-dev=/' 
+    '--prescript=autoreconf -v --install --force'  \
+    '--config=--prefix=/usr --enable-optimizations --with-system-expat --without-pydebug' \
+    '--deploy-sdk=/usr/bin /usr/lib'    \
+    '--deploy-dev=/ -/usr/share' 
+    
+#generate_alias  native_python  cross_python

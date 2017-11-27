@@ -148,7 +148,7 @@ run_cmd()
 export concurrent_make=`nproc`
 exec_build()
 {
-	exec_cmd "make -j $concurrent_make $*"
+    exec_cmd "${CCACHE} make -j $concurrent_make $*"
 }
 sudo_build()
 {
@@ -301,6 +301,19 @@ restoreenv()
 	CXXFLAGS=${temp_store_cxxflags}
 }
 
+set_ccache_config()
+{
+  if [ -f $SDKDIR/usr/bin/ccache ]; then
+        $SDKDIR/usr/bin/ccache --set-config=cache_dir=$TEMPDIR/.ccache || fail "无法设置ccache!"
+        CCACHE=ccache
+        alias gcc='ccache gcc'
+        alias g++='ccache g++'
+    else
+        unset CCACHE
+        unalias gcc
+        unalias g++
+    fi;
+}
 # initenv，每个软件包开始编译时的路径
 initenv()
 {
@@ -319,6 +332,8 @@ initenv()
     export PKG_CONFIG_PATH=$ADDITION_PKG_CONFIG_PATH:$SDKDIR/usr/lib/pkgconfig:$SDKDIR/usr/share/pkgconfig
     export PKG_CONFIG_LIBDIR="yes"             # 避免系统库污染?
     export PKG_CONFIG_SYSROOT_DIR='='
+  
+    set_ccache_config
     unset PKG_CONFIG_ALLOW_SYSTEM_CFLAGS
     unset PKG_CONFIG_ALLOW_SYSTEM_LIBS
 #	export PKG_CONFIG_SYSROOT_DIR='='       #$SDKDIR
@@ -326,8 +341,10 @@ initenv()
 #	export PKG_CONFIG_ALLOW_SYSTEM_LIBS=yes
     
     # python脚本
-    export PYTHONPATH=`ls -d $SDKDIR/usr/lib/python2*/dist-packages 2>/dev/null`
-    export PYTHONPATH=$PYTHONPATH:`ls -d $SDKDIR/usr/lib/python2*/site-packages 2>/dev/null`
+    unset PYTHONPATH
+ #   export PYTHONPATH=`ls -d $SDKDIR/usr/lib/python2*/dist-packages 2>/dev/null`
+ #   export PYTHONPATH=$PYTHONPATH:`ls -d $SDKDIR/usr/lib/python2*/site-packages 2>/dev/null`
+    hash -r
 }
 
 dispenv()
@@ -342,7 +359,7 @@ dispenv()
 	echo "export CXXFLAGS=\"$CXXFLAGS\""
 	echo "export CPPFLAGS=\"$CPPFLAGS\""
 	echo "export PKG_CONFIG_PATH=$PKG_CONFIG_PATH"
-#	echo "export PKG_CONFIG_SYSROOT_DIR=$PKG_CONFIG_SYSROOT_DIR"
+	echo "export PKG_CONFIG_SYSROOT_DIR=$PKG_CONFIG_SYSROOT_DIR"
 #	echo "export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=$PKG_CONFIG_ALLOW_SYSTEM_CFLAGS"
 #	echo "export PKG_CONFIG_ALLOW_SYSTEM_LIBS=$PKG_CONFIG_ALLOW_SYSTEM_LIBS"
 	if [ t"$PKG_CONFIG_LIBDIR" != "t" ]; then
@@ -351,6 +368,7 @@ dispenv()
 	    echo "unset PKG_CONFIG_LIBDIR"
 	fi
 	echo "export PYTHONPATH=$PYTHONPATH"
+	echo "export CCACHE=$CCACHE"
 	echo "==============================================================================="
 }
 
@@ -388,6 +406,8 @@ init_native_env()
 	export LDFLAGS="-L$DEVDIR/usr/lib -L$DEVDIR/lib"
 	export LIBS=""
 
+    set_ccache_config
+    
     unset_pkgconfig_env	
     export PKG_CONFIG_PATH=$DEVDIR/usr/lib/pkgconfig:$DEVDIR/usr/share/pkgconfig
 #	export PKG_CONFIG_SYSROOT_DIR=$DEVDIR
@@ -395,8 +415,10 @@ init_native_env()
 #	export PKG_CONFIG_ALLOW_SYSTEM_LIBS=1
 	unset PKG_CONFIG_LIBDIR
 
-    export PYTHONPATH=`ls -d $DEVDIR/usr/lib/python2*/dist-packages 2>/dev/null`
-    export PYTHONPATH=$PYTHONPATH:`ls -d $DEVDIR/usr/lib/python2*/site-packages 2>/dev/null`
+    unset PYTHONPATH
+ #  export PYTHONPATH=`ls -d $DEVDIR/usr/lib/python2*/dist-packages 2>/dev/null`
+ #   export PYTHONPATH=$PYTHONPATH:`ls -d $DEVDIR/usr/lib/python2*/site-packages 2>/dev/null`
+    hash -r
 }
 unset_pkgconfig_env()
 {

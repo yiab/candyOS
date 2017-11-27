@@ -85,6 +85,8 @@ generate_script  cross_pkgconfig     freedesktop/$FREEDESKTOP_PKGCONFIGFILE     
     '--postscript=cp ./usr/bin/pkg-config ./usr/bin/$MY_TARGET-pkg-config'        \
     '--deploy-sdk=/usr/bin -/usr/bin/pkg-config /usr/share/aclocal'                \
     '--deploy-dev=/usr/bin/pkg-config /usr/share/aclocal'
+
+generate_alias  native_pkgconfig  cross_pkgconfig
     
 ##############################
 # 编译 dbus-1.11.22

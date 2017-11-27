@@ -59,22 +59,18 @@ construct_pi()
 	#export ADDITION_LDFLAGS="-L$SDKDIR/opt/vc/lib"
     #export ADDITION_PKG_CONFIG_PATH="$SDKDIR/opt/vc/lib/pkgconfig:$ADDITION_PKG_CONFIG_PATH"
 
-    run_build   libjpeg
-    run_build   libpng
-   
-    run_build   x11_twm 
-    run_build   x11_xinit
-    run_build   cairo
-    run_build   xf86_input_evdev
-    run_build   xorg_server
-    run_build   shared_mime_info
-    run_build   xf86_video_fbturbo # Pi的驱动
-    run_build   xf86_video_fbdev  # 用于对比
+    
+    run_build   libjpeg libpng x11_twm  x11_xini cairo
+    run_build   xf86_input_evdev xf86_video_fbturbo xf86_video_fbdev
+    run_build   xorg_server shared_mime_info
     #run_build metacity
     
+    run_build gtk3
     exit;
-     run_build   directfb
-    run_build   gtk3
+    
+    exit;
+    run_build   directfb
+    run_build   
 }
 
 RPI_USERLAND=userland

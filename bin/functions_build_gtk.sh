@@ -332,8 +332,34 @@ build_gtk2()
 }
 
 ##############################
+# 编译 gobject-introspection
+# http://ftp.gnome.org/pub/gnome/sources/gobject-introspection/
+GOBJECT_INTROSPECTION_FILE=gobject-introspection-1.54.1
+generate_script  gobject_introspection     $GOBJECT_INTROSPECTION_FILE     \
+    '--prescript=autoreconf -v --install --force'                                \
+    '--config=--prefix=/usr --host=$MY_TARGET --disable-static  --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf --disable-doctool -with-sysroot=$SDKDIR --with-cairo'  \
+    '--deploy-sdk=/usr/lib -/usr/lib/pkgconfig'                                                \
+    '--deploy-rootfs=/usr/lib /usr/share -/usr/lib/pkgconfig'        \
+    '--depends=glib cairo cross_python' --debug  --show-usage
+
+
+##############################
 # 编译 gtk+-3.7.6
-GTK3FILES=gtk+-3.7.6
+# http://ftp.gnome.org/pub/gnome/sources/gtk+/
+GTK3FILES=gtk+-3.22.26
+PARAM="--prefix=/usr --host=$MY_TARGET --disable-static --disable-debug --disable-maintainer-mode --disable-glibtest  --disable-test-print-backend  --disable-glibtest --enable-debug=no --disable-cups --with-x --enable-x11-backend ac_cv_func_mmap_fixed_mapped=yes --without-atk-bridge"
+generate_script  gtk3     $GTK3FILES     \
+    '--prescript=autoreconf -v --install --force'                                \
+    "--config=$PARAM"  \
+    '--deploy-sdk=/usr/lib -/usr/lib/pkgconfig'                                                \
+    '--deploy-rootfs=/usr/lib /usr/share -/usr/lib/pkgconfig'        \
+    '--depends=glib gobject_introspection atk pango gdkpixbuf cairo x11_libx11 x11_libxi x11_libxrandr' --debug  --show-usage
+#     	
+#PRE_REMOVE_LIST="/usr/lib/*.la /usr/share/gtk-doc /usr/share/man"
+#REMOVE_LIST="/usr/lib/pkgconfig /usr/share/aclocal"
+#DEPLOY_DIST="/etc /usr/bin /usr/lib /usr/share"
+#deploy $GTK3FILES gtk3
+
 compile_gtk3()
 {
 	if [ ! -e $CACHEDIR/$GTK3FILES.tar.gz ]; then
@@ -346,7 +372,7 @@ compile_gtk3()
 		export PKG_CONFIG_FOR_BUILD="/usr/bin/pkg-config"
 #restore_native0
 		#	For Gtk3		
-		PARAM="--prefix=/usr --host=$MY_TARGET --disable-static --disable-debug --disable-maintainer-mode --disable-glibtest  --disable-test-print-backend  --disable-glibtest --enable-debug=no --disable-cups --with-x --enable-x11-backend ac_cv_func_mmap_fixed_mapped=yes --without-atk-bridge"
+		
 #		PARAM+=" --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf --disable-man"
 #		PARAM+=" --disable-win32-backend --disable-quartz-backend" # quartz is for mac
 #		PARAM+="  --disable-xinerama --enable-xinput --enable-xrandr --enable-xfixes --enable-xcomposite --enable-xdamage --enable-xkb"
@@ -389,26 +415,6 @@ exit
 		exec_cmd "rm -rf $CACHEDIR/gtk3 $TEMPDIR/$GTK3FILES"
 	fi;
 	
- 	PRE_REMOVE_LIST="/usr/lib/*.la /usr/share/gtk-doc /usr/share/man"
-	REMOVE_LIST="/usr/lib/pkgconfig /usr/share/aclocal"
-	DEPLOY_DIST="/etc /usr/bin /usr/lib /usr/share"
-	deploy $GTK3FILES gtk3
-}
-build_gtk3()
-{
-	# Package requirements (glib-2.0 >= 2.27.3  atk >= 1.29.2    pango >= 1.20    cairo >= 1.6    gdk-pixbuf-2.0 >= 2.21.0)
-	build_glib
-	
-	build_atk
-	build_pango
-	build_gdkpixbuf
-	build_cairo
-	
-	build_x11_libx11
-	build_x11_libxi
-	build_x11_libxrandr
-	
-	run_task "构建$GTK3FILES" "compile_gtk3"
 }
 
 build_libxml2()

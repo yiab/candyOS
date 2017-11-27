@@ -61,6 +61,7 @@ deploy()
         _deploy_dir=$SDKDIR
         local _change_la1_dir='='
         local _change_la2_dir='='
+        local _change_python='Y'
         ;;
     "rootfs")
         _deploy_dir=$INSTDIR
@@ -70,6 +71,7 @@ deploy()
         #_change_pc="Y"
         #local _change_la1_dir=$DEVDIR
         #local _change_la2_dir=$DEVDIR
+        local _change_python='Y'
         ;;
     "boot")
         _deploy_dir=$BOOTDIR
@@ -116,6 +118,10 @@ deploy()
             fi;
         done;
     fi;
+    if [ y$_change_python = 'yY' ]; then
+        sudo find * -type f -exec sed -i "1,1s@^#\!/usr/bin/python@#\!${_deploy_dir}/usr/bin/python@" {} \; || fail "修改python引用失败！"
+    fi;
+    
     if [ -n "$_deploy_dir" ]; then
         for d in $_add_cmd; do
             if [ -d $d ]; then
@@ -128,6 +134,7 @@ deploy()
             fi;
         done;
     fi;
+
     cd $TEMPDIR
     sudo rm -rf $TEMPDIR/.cacheout #1>/dev/null 2>&1
 }

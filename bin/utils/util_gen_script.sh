@@ -315,10 +315,28 @@ _EOF_
 function run_build()
 {
     if [ $# -lt 1 ]; then
-        echo "run_build <pkg_name>"
+        echo "run_build <pkg1> <pkg2> ..."
+    fi;
+    
+    until [ -z "$1" ]; do
+        local _pkg=`echo $1`       # 去掉首部空格，如果全空格，则为空
+        
+        run_build0 ${_pkg}
+        shift;
+    done;
+}
+
+function run_build0()
+{
+    if [ $# -lt 1 ]; then
+        echo "run_build0 <pkg_name>"
     fi;
     
     local pkgName=$1
+    if [ -z ${_declare_loc[$pkgName]} ]; then
+        return -1;          # 没有这个软件包
+    fi;
+    
     if [ y${_task_has_completed[$pkgName]} = 'yY' ]; then
         return 0;
     fi;
@@ -327,7 +345,7 @@ function run_build()
     for p in $depList; do
         local s=${_task_has_completed[$p]}
         if [ y$s != 'yY' ]; then
-            run_build $p
+            run_build0 $p
         fi;
     done;
     
