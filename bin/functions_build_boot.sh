@@ -136,7 +136,7 @@ build_busybox()
 		exec_cmd "cp $PATCHDIR/$BUSYBOXFILE.config .config"
 	
 		changeoption .config CONFIG_PREFIX \"$cachedir\"
-#		changeoption .config CONFIG_SYSROOT \"$SDKDIR\"
+		changeoption .config CONFIG_SYSROOT \"$SDKDIR\"
 		changeoption .config CONFIG_CROSS_COMPILER_PREFIX \"$MY_TARGET-\"
 		
         if [ "$FEATURE_UTILLINUX" = "y" ]; then

@@ -148,7 +148,7 @@ run_cmd()
 export concurrent_make=`nproc`
 exec_build()
 {
-    exec_cmd "${CCACHE} make -j $concurrent_make $*"
+    exec_cmd "make -j $concurrent_make $*"
 }
 sudo_build()
 {

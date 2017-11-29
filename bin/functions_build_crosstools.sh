@@ -96,16 +96,17 @@ generate_script  ncursesw     $NCURSESFILE     \
 ##############################
 # 编译 gettext-0.19.8
 GETTEXT=gettext-0.19.8
-generate_script  gettext     $GETTEXT     \
-    '--config=--prefix=/usr --host=$MY_TARGET --with-sysroot=$SDKDIR --disable-shared --without-emacs --without-git --disable-acl --disable-openmp --disable-java'       \
-    '--depends=expat ncurses' \
-    '--deploy-sdk=/usr/lib -/usr/share -/usr/bin'
+# GETTEXT只会在编译的时候用到，也就是说，最多出现在sdk里面
+#generate_script  gettext     $GETTEXT     \
+#    '--config=--prefix=/usr --host=$MY_TARGET --with-sysroot=$SDKDIR --disable-shared --without-emacs --without-git --disable-acl --disable-openmp --disable-java'       \
+#    '--depends=expat ncurses' \
+#    '--deploy-sdk=/usr/lib -/usr/share -/usr/bin' --debug
 
 generate_script cross_gettext $GETTEXT  \
     --build-native                 \
     '--config=--prefix=$SDKDIR/usr --disable-shared --without-emacs --without-git --disable-acl --disable-openmp --disable-java'       \
     '--depends=native_expat native_ncurses' \
-    '--deploy-sdk=/ -/usr/share' 
+    '--deploy-sdk=/usr/bin /usr/share -/usr/share/doc -/usr/share/man -/usr/share/locale'  
     
 generate_script  native_gettext     $GETTEXT     \
     --build-native                 \
@@ -117,11 +118,16 @@ generate_script  native_gettext     $GETTEXT     \
 # 编译 Python
 PYTHON27FILE=Python-2.7.14
 generate_script     cross_python   $PYTHON27FILE                    \
-    '--depends=native_python expat cross_gettext'                         \
-    '--prescript=autoreconf -v --install --force'  \
-    --make-before-install     \
-    '--config=--host=$MY_TARGET --build=x86_64-pc-linux-gnu --target=$MY_TARGET --prefix=/usr --enable-optimizations --with-system-expat --without-pydebug --disable-ipv6 ac_cv_file__dev_ptmx=yes ac_cv_file__dev_ptc=no' \
-    '--deploy-sdk=/usr/bin /usr/include /usr/lib'   --debug
+    '--depends=native_python expat ncursesw libbz2 openssl cross_gettext libffi'                         \
+    '--script=export PKG_CONFIG_SYSROOT_DIR=$SDKDIR'       \
+    '--script=autoreconf -v --install --force'  \
+    '--script=./configure --host=$MY_TARGET --build=x86_64-pc-linux-gnu --target=$MY_TARGET --prefix=/usr --enable-optimizations --with-system-expat --with-system-ffi --without-pydebug --disable-profiling --disable-ipv6 ac_cv_file__dev_ptmx=yes ac_cv_file__dev_ptc=no' \
+    '--script=exec_build V=1'   \
+    '--script=mv Lib/compileall.py Lib/compileall.py.bak'   \
+    '--script=echo > ../Python-2.7.14/Lib/compileall.py'    \
+    '--script=exec_build V=1 install DESTDIR=$TEMPDIR/dist'   \
+    '--script=cp Lib/compileall.py.bak $TEMPDIR/dist/usr/lib/python2.7/compileall.py'   \
+    '--deploy-sdk=/usr/include -/usr/lib -/usr/bin -/usr/share'
 
 generate_script     native_python   $PYTHON27FILE                    \
     --build-native      \

@@ -1,6 +1,8 @@
 # 需要主机安装的软件包
 # NATIVE_PREREQUIRST
 
+# chanp
+
 # 指定交叉工具链
 export TOOLCHAIN_FILE=arm-rpi-4.9.3-linux-gnueabihf
 export TOOLCHAIN_FLAGS="-march=armv8-a -mtune=cortex-a53 -mfpu=crypto-neon-fp-armv8 -mfloat-abi=hard"
@@ -74,6 +76,7 @@ construct_pi()
 }
 
 RPI_USERLAND=userland
+
 generate_script     rpi_userland  $RPI_USERLAND                                   \
     '--patch=userland_no_march_flag.patch'                                        \
     '--script=./buildme $TEMPDIR/dist'                                            \

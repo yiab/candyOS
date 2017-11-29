@@ -67,8 +67,7 @@ generate_script  libxml2     $LIBXML2FILE     \
 OPENSSLFILE=openssl-1.1.0g
 generate_script  openssl     $OPENSSLFILE     \
     '--prescript=./Configure linux-armv4 --cross-compile-prefix=${MY_TARGET}- --prefix=/usr --release threads zlib-dynamic shared $CFLAGS $LDFLAGS -lz' \
-    '--prescript=make -j8' \
-    --inside  \
+    --inside  --make-before-install \
     '--depends=libz'    \
     '--deploy-rootfs=/usr/bin /usr/lib  /usr/ssl -/usr/lib/*.a -/usr/lib/pkgconfig -/usr/lib/*.la' \
     '--deploy-sdk=/usr/include /usr/lib -/usr/lib/*.a'

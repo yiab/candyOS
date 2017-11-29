@@ -41,13 +41,13 @@ function check_cross_setting()
             
             cat << _EOF_ > $MY_TARGET-gcc
 #!/bin/bash
-\${CCACHE} arm-linux-gnueabihf-gcc-real --sysroot=/home/baiyun/git/ckOS/dist/pi/sdk -isystem =/include \$MY_TOOLCHAIN_FLAGS "\$@" <&0
+$TOOLCHAIN_BIN/arm-linux-gnueabihf-gcc-real --sysroot=$SDKDIR -isystem =/include \$MY_TOOLCHAIN_FLAGS "\$@" <&0
 _EOF_
             chmod +x $MY_TARGET-gcc
 
             cat << _EOF_ > $MY_TARGET-g++
 #!/bin/bash
-\${CCACHE} arm-linux-gnueabihf-g++-real --sysroot=/home/baiyun/git/ckOS/dist/pi/sdk -isystem =/include \$MY_TOOLCHAIN_FLAGS "\$@" <&0
+$TOOLCHAIN_BIN/arm-linux-gnueabihf-g++-real --sysroot=$SDKDIR -isystem =/include \$MY_TOOLCHAIN_FLAGS "\$@" <&0
 _EOF_
             chmod +x $MY_TARGET-g++
             ln -s $MY_TARGET-g++ $MY_TARGET-c++
