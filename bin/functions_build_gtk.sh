@@ -21,9 +21,9 @@ GLIBFILE=glib-2.54.2
 # 临时使用的glib，没有必要编译libmount(在util-linux里面)
 generate_script  native_glib     $GLIBFILE     \
     --build-native                  \
-    '--config=--prefix=$DEVDIR/usr --disable-static --disable-libmount --disable-gtk-doc --disable-gcov --disable-debug '          \
+    '--config=--prefix=$DEVDIR/usr --disable-static --disable-libmount --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf --disable-man --disable-debug --disable-coverage --disable-dtrace --disable-selinux --disable-dtrace --disable-systemtap --without-pcre --with-python=python2 --without-libiconv --disable-fam'          \
     '--deploy-dev=/usr'                                  \
-    '--depends=native_libz native_libffi'
+    '--depends=native_libz native_libffi native_python'
 
 PARAMS='--host=$MY_TARGET --prefix=/usr --disable-static --with-sysroot=$SDKDIR '
 PARAMS+='glib_cv_stack_grows=no glib_cv_uscore=no ac_cv_func_posix_getpwuid_r=yes ac_cv_func_posix_getgrgid_r=yes ac_cv_lib_rt_clock_gettime=no glib_cv_monotonic_clock=yes '
@@ -335,13 +335,13 @@ build_gtk2()
 # 编译 gobject-introspection
 # http://ftp.gnome.org/pub/gnome/sources/gobject-introspection/
 GOBJECT_INTROSPECTION_FILE=gobject-introspection-1.54.1
-generate_script  gobject_introspection     $GOBJECT_INTROSPECTION_FILE     \
+generate_script  cross_gobject_introspection     $GOBJECT_INTROSPECTION_FILE     \
+    --build-native      \
     '--prescript=autoreconf -v --install --force'                                \
-    '--config=--prefix=/usr --host=$MY_TARGET --disable-static  --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf --disable-doctool -with-sysroot=$SDKDIR --with-cairo'  \
+    '--config=--prefix=/usr --disable-static  --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf --disable-doctool'  \
     '--deploy-sdk=/usr/lib -/usr/lib/pkgconfig'                                                \
-    '--deploy-rootfs=/usr/lib /usr/share -/usr/lib/pkgconfig'        \
-    '--depends=glib cairo cross_python' --debug  --show-usage
-
+    '--depends=native_glib native_python'   --keep  --debug  --show-usage
+#-with-sysroot=$SDKDIR
 
 ##############################
 # 编译 gtk+-3.7.6
@@ -353,7 +353,7 @@ generate_script  gtk3     $GTK3FILES     \
     "--config=$PARAM"  \
     '--deploy-sdk=/usr/lib -/usr/lib/pkgconfig'                                                \
     '--deploy-rootfs=/usr/lib /usr/share -/usr/lib/pkgconfig'        \
-    '--depends=glib gobject_introspection atk pango gdkpixbuf cairo x11_libx11 x11_libxi x11_libxrandr' --debug  --show-usage
+    '--depends=glib cross_gobject_introspection atk pango gdkpixbuf cairo x11_libx11 x11_libxi x11_libxrandr' --debug  --show-usage
 #     	
 #PRE_REMOVE_LIST="/usr/lib/*.la /usr/share/gtk-doc /usr/share/man"
 #REMOVE_LIST="/usr/lib/pkgconfig /usr/share/aclocal"

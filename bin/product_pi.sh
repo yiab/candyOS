@@ -60,19 +60,16 @@ construct_pi()
 	#export ADDITION_CFLAGS="-I$SDKDIR/opt/vc/include " #-march=armv8-a -mtune=cortex-a53 -mfpu=crypto-neon-fp-armv8"
 	#export ADDITION_LDFLAGS="-L$SDKDIR/opt/vc/lib"
     #export ADDITION_PKG_CONFIG_PATH="$SDKDIR/opt/vc/lib/pkgconfig:$ADDITION_PKG_CONFIG_PATH"
-
     
     run_build   libjpeg libpng x11_twm  x11_xini cairo
     run_build   xf86_input_evdev xf86_video_fbturbo xf86_video_fbdev
-    run_build   xorg_server shared_mime_info
+    run_build   xorg_server shared_mime_info libtiff 
     #run_build metacity
     
-    run_build gtk3
+    #run_build gtk3
+    #run_build   directfb
+    dispenv
     exit;
-    
-    exit;
-    run_build   directfb
-    run_build   
 }
 
 RPI_USERLAND=userland
