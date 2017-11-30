@@ -33,7 +33,7 @@ generate_script  glib     $GLIBFILE     \
     "--config=$PARAMS"  \
     '--deploy-sdk=/usr/include /usr/lib /usr/share'                                  \
     '--deploy-rootfs=/usr/bin /usr/lib/*.so* /usr/share/locale' \
-    '--depends=libz libffi libmount dbus cross_python' --keep
+    '--depends=libz libffi libmount dbus cross_python' 
 #libiconv libpcre
 
 ###########################
@@ -340,7 +340,7 @@ generate_script  cross_gobject_introspection     $GOBJECT_INTROSPECTION_FILE    
     '--prescript=autoreconf -v --install --force'                                \
     '--config=--prefix=/usr --disable-static  --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf --disable-doctool'  \
     '--deploy-sdk=/usr/lib -/usr/lib/pkgconfig'                                                \
-    '--depends=native_glib native_python'   --keep  --debug  --show-usage
+    '--depends=native_glib native_python'     --debug  --show-usage
 #-with-sysroot=$SDKDIR
 
 ##############################

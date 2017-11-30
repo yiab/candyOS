@@ -61,7 +61,7 @@ construct_pi()
 	#export ADDITION_LDFLAGS="-L$SDKDIR/opt/vc/lib"
     #export ADDITION_PKG_CONFIG_PATH="$SDKDIR/opt/vc/lib/pkgconfig:$ADDITION_PKG_CONFIG_PATH"
     
-    run_build   libjpeg libpng x11_twm  x11_xini cairo
+    run_build  libnspr libjpeg libpng x11_twm  x11_xini cairo
     run_build   xf86_input_evdev xf86_video_fbturbo xf86_video_fbdev
     run_build   xorg_server shared_mime_info libtiff 
     #run_build metacity
