@@ -25,8 +25,10 @@ generate_script  native_beep     $BEEPFILE     \
     --build-native   --make-before-install     \
     '--prescript=mkdir -p $TEMPDIR/dist/usr/bin $TEMPDIR/dist/usr/man/man1'     \
     '--install_target=install INSTALL_DIR=$TEMPDIR/dist/usr/bin MAN_DIR=$TEMPDIR/dist/usr/man/man1'     \
+    '--postscript=sudo chown root:audio $TEMPDIR/dist/usr/bin/beep'   \
+    '--postscript=sudo chmod u=rwxs,g=rx,o=rx $TEMPDIR/dist/usr/bin/beep' \
     '--deploy-sdk=/usr/bin'                 \
-    '--deploy-dev=/usr/bin' 
+    '--deploy-dev=/usr/bin'
 
 ##############################
 # 编译 flex

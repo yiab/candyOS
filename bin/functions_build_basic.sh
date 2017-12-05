@@ -23,7 +23,7 @@ generate_script  libpng     $PNGFILE     \
     '--config=--host=$MY_TARGET --prefix=/usr --disable-static --enable-arm-neon=yes'       \
     '--deploy-rootfs=/usr/lib -/usr/lib/*.la -/usr/lib/pkgconfig' \
     '--deploy-sdk=/usr/include /usr/lib'   \
-    '--depends=cross_autogen_env libz'
+    '--depends=cross_autogen_env libz '
     
 ########################
 # libjpeg

@@ -130,8 +130,6 @@ function generate_script()
     done;
     set +f
     
-    mkdir -p $TEMPDIR/.script || fail "无法创建.script临时目录"
-
     check_dup $funcName || fail "重复定义$funcName, @`callee_location` ";
 #=============================================================================================================
 cat << _EOF_ > $scriptFilename
@@ -189,11 +187,6 @@ _EOF_
 _EOF_
         #--------------------------------------------------------------------------------------------------------------
         
-        if [ -n "$isDebug" ]; then
-            echo 'echo "Build Finished! Press any key to continue!"' >> $scriptFilename
-            echo 'read _any_char' >> $scriptFilename
-        fi;
-        
         local n=${#post_script_array[@]}
         if [ $n -gt 0 ]; then
             echo "exec_cmd \"cd \$TEMPDIR/dist\"" >> $scriptFilename
@@ -203,6 +196,11 @@ _EOF_
                 echo "exec_cmd \"${post_script_array[$i]}\"" >> $scriptFilename
             done
             set +f
+        fi;
+        
+        if [ -n "$isDebug" ]; then
+            echo 'echo "Build Finished! Press any key to continue!"' >> $scriptFilename
+            echo 'read _any_char' >> $scriptFilename
         fi;
     fi;
     
@@ -232,7 +230,6 @@ _declare_loc+=( ["$funcName"]="$loc" )
 _EOF_
 #--------------------------------------------------------------------------------------------------------------
 
-    # exec_cmd "cat $scriptFilename"
     source $scriptFilename || fail "脚本$scriptFilename出错"
     [ 'Y' == "$keepGenSh" ] || rm -rf $scriptFilename
     
@@ -254,7 +251,6 @@ function generate_alias()
     local scriptFilename="$TEMPDIR/.script/_build_$aliasName.gen.sh"
     local loc=`callee_location`
     
-    mkdir -p $TEMPDIR/.script || fail "无法创建.script临时目录"
     check_dup $aliasName || fail "重复定义$aliasName, @`callee_location` ";
     cat << _EOF_ > $scriptFilename
 ${_BUILD_FUNC_PREFIX_}_$aliasName()
@@ -295,7 +291,6 @@ function generate_custom()
     fi;
     local scriptFilename="$TEMPDIR/.script/_build_$pkgName.gen.sh"
     
-    mkdir -p $TEMPDIR/.script || fail "无法创建.script临时目录"
     check_dup $pkgName || fail "重复定义$pkgName, @`callee_location` ";
     
     cat << _EOF_ > $scriptFilename

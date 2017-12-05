@@ -12,8 +12,8 @@ generate_script     utillinux   $UTILLINUXFILE                                  
     '--config=--host=$MY_TARGET --target=$MY_TARGET --prefix=/usr --disable-static --without-python --with-sysroot=$SDKDIR'            \
     '--depends=ncursesw libz libpam'                                                                                           \
     '--install_target=install PATH=$PATH'                                                                               \
-    '--deploy-rootfs=/usr/bin /usr/lib /usr/sbin /usr/share -/usr/lib/*.la -/usr/lib/pkgconfig -/usr/share/man -/usr/share/doc'    \
-    '--deploy-sdk=/'
+    '--deploy-rootfs=/bin /sbin /lib /usr -/usr/include -/usr/lib/*.la -/usr/lib/pkgconfig -/usr/share/man -/usr/share/doc'    \
+    '--deploy-sdk=/lib /usr/lib /usr/include'
 # 遗留： libcap-ng   linux/blkzoned.h PAM  libpython
 
 generate_alias libuuid      utillinux

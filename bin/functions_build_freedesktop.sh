@@ -82,10 +82,25 @@ generate_script  pkgconfig     freedesktop/$FREEDESKTOP_PKGCONFIGFILE     \
 generate_script  cross_pkgconfig     freedesktop/$FREEDESKTOP_PKGCONFIGFILE     \
     --build-native                  \
     '--config=--prefix=/usr --disable-static --disable-host-tool --without-gcov --with-internal-glib'       \
-    '--postscript=cp ./usr/bin/pkg-config ./usr/bin/$MY_TARGET-pkg-config'        \
-    '--deploy-sdk=/usr/bin -/usr/bin/pkg-config /usr/share/aclocal'                \
-    '--deploy-dev=/usr/bin/pkg-config /usr/share/aclocal'
-
+    '--postscript=prepare_pkgconfig_for_sysroot'        \
+    '--deploy-sdk=/usr/bin -/usr/bin/pkg-config /usr/share/aclocal -/usr/share/doc -/usr/share/man'                \
+    '--deploy-dev=/usr/bin/pkg-config /usr/share/aclocal -/usr/share/doc -/usr/share/man'
+function prepare_pkgconfig_for_sysroot()
+{
+    cd $TEMPDIR/dist
+    cp usr/bin/pkg-config usr/bin/$MY_TARGET-pkg-config-real
+    cat << MY_EOF > usr/bin/$MY_TARGET-pkg-config
+#!/bin/bash
+RUNDIR=\$(cd \`dirname \$0\`; pwd)
+MYNAME=\`basename \$0\`
+ROOTDIR=\$(cd \`dirname \$0\`/../..; pwd)
+PKG_CONFIG_LIBDIR="yes"       PKG_CONFIG_SYSROOT_DIR='='    \$RUNDIR/\${MYNAME}-real "\$@" 1>\$RUNDIR/\${MYNAME}-last-response
+ret=\$?
+sed -r "s#(^|\ +)/usr#\1\$ROOTDIR/usr#g" \$RUNDIR/\${MYNAME}-last-response
+exit \$ret
+MY_EOF
+    chmod +x usr/bin/$MY_TARGET-pkg-config
+}
 generate_alias  native_pkgconfig  cross_pkgconfig
     
 ##############################

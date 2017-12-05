@@ -23,6 +23,7 @@ generate_script  native_glib     $GLIBFILE     \
     --build-native                  \
     '--config=--prefix=$DEVDIR/usr --disable-static --disable-libmount --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf --disable-man --disable-debug --disable-coverage --disable-dtrace --disable-selinux --disable-dtrace --disable-systemtap --without-pcre --with-python=python2 --without-libiconv --disable-fam'          \
     '--deploy-dev=/usr'                                  \
+    '--deploy-sdk=/usr/bin -/usr/lib -/usr/share -/usr/include' \
     '--depends=native_libz native_libffi native_python'
 
 PARAMS='--host=$MY_TARGET --prefix=/usr --disable-static --with-sysroot=$SDKDIR '
@@ -43,7 +44,7 @@ generate_script  atk     $ATKFILE     \
     '--config=--host=$MY_TARGET --target=$MY_TARGET --prefix=/usr --disable-static --with-sysroot=$SDKDIR --disable-glibtest --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf --with-gnu-ld '  \
     '--deploy-sdk=/usr/include /usr/lib'                                    \
     '--deploy-rootfs=/usr/lib /usr/share/locale -/usr/lib/pkgconfig -/usr/lib/*.la'        \
-    '--depends=glib'
+    '--depends=glib '
     
 ###########################
 # 编译 at-spi2-core
@@ -336,11 +337,21 @@ build_gtk2()
 # http://ftp.gnome.org/pub/gnome/sources/gobject-introspection/
 GOBJECT_INTROSPECTION_FILE=gobject-introspection-1.54.1
 generate_script  cross_gobject_introspection     $GOBJECT_INTROSPECTION_FILE     \
-    --build-native      \
     '--prescript=autoreconf -v --install --force'                                \
-    '--config=--prefix=/usr --disable-static  --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf --disable-doctool'  \
-    '--deploy-sdk=/usr/lib -/usr/lib/pkgconfig'                                                \
-    '--depends=native_glib native_python'     --debug  --show-usage
+    '--config=--prefix=/usr --host=$MY_TARGET --with-sysroot=$SDKDIR --disable-static  --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf --disable-doctool'  \
+    '--install_target=install-strip'    \
+    '--deploy-sdk=/usr/bin /usr/include /usr/lib /usr/share -/usr/share/man'           \
+    '--depends=glib cross_python native_gobject_introspection' --debug
+
+generate_script  native_gobject_introspection     $GOBJECT_INTROSPECTION_FILE     \
+    --build-native  \
+    '--prescript=autoreconf -v --install --force'                                \
+    '--config=--prefix=$DEVDIR/usr --disable-static  --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf --disable-doctool'  \
+    '--install_target=install-strip'    \
+    '--deploy-sdk=/usr/bin '           \
+    '--deploy-dev=/usr/lib -/usr/lib/pkgconfig' \
+    '--depends=native_glib native_python' 
+    
 #-with-sysroot=$SDKDIR
 
 ##############################

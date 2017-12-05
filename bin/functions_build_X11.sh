@@ -39,18 +39,6 @@ generate_script     libfreetype   $FREETYPEFILE                                 
        
 generate_alias freetype libfreetype
 
-###########################
-# directfb
-DIRECTFBFILE=DirectFB-1.6.2
-PARAM='--host=$MY_TARGET --prefix=/usr --sysconfdir=/etc --with-sysroot=$SDKDIR --enable-zlib --enable-jpeg --enable-png --enable-freetype '
-PARAM+='--with-gfxdrivers=gles2,gl --with-inputdrivers=none --enable-egl --with-tests --with-tools'
-generate_script     directfb   $DIRECTFBFILE                                 \
-    "--config=$PARAM"                    \
-    '--depends=libz libpng libjpeg libfreetype gles egl'                                                 \
-    '--deploy-rootfs=/usr/bin /usr/lib -/usr/lib/pkgconfig'  \
-    '--deploy-sdk=/'      --debug
-    
-#		prepare $DIRECTFBFILE dfb-fsl-egl.patch
 
 ##############################
 # 编译 xkeyboard-config-2.22

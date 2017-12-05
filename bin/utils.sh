@@ -29,10 +29,13 @@ mount_temp()
 	df | grep -q "$TEMPDIR"
 	if [ "$?" == "0" ]; then
 	    sudo rm -rf $TEMPDIR/* 1>/dev/null 2>&1 || fail "无法umount temp并且无法清空其中内容!"
+	else
+	    echo "MOUNT $TEMPDIR to Memory Disk"
+	    mkdir -p $TEMPDIR
+	    sudo mount -t tmpfs tmpfs $TEMPDIR -o size=4096M            # mount一个4G的内存盘
 	fi;
 	
-	mkdir -p $TEMPDIR
-	sudo mount -t tmpfs tmpfs $TEMPDIR -o size=4096M            # mount一个4G的内存盘
+	mkdir -p $TEMPDIR/.script
 }
 
 NATIVE_PREREQUIRST+=" beep"

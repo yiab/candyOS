@@ -31,6 +31,7 @@ function check_setting()
     echo 共定义 $n 个软件包
     
     tick_start
+    declare -A _is_ok
     for (( i=0; i<$n; i++ )) ; do
         name=${_flist_[$i]}
         deps=${_depends_map[$name]}
@@ -54,6 +55,7 @@ function check_setting()
     done
     unset _checking
     tick "检查所有函数"
+    unset _is_ok
     
     if [ $hasError = 'Y' ]; then
         echo "存在错误，是否继续？(Y/N)"
@@ -69,9 +71,12 @@ function check_dependency()
 {
     local name=$1
     local idx=${#_deplink[@]}
+    local already_checked=${_is_ok["$name"]}
+    if [ "Y" == "$already_checked" ]; then
+        return 0;
+    fi; 
     _deplink[$idx]=$name
     _checking[$name]="Y"
-
     deps=${_depends_map[$name]}
     for d in $deps; do
         if [ "Y" == "${_checking[$d]}" ]; then
@@ -84,6 +89,7 @@ function check_dependency()
     
     unset _checking[$name]
     unset _deplink[$idx]
+    _is_ok["$name"]='Y'
 }
 
 function show_all_package()
