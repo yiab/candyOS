@@ -1,0 +1,9 @@
+diff -Naur gobject-introspection-1.54.1/tools/g-ir-tool-template.in gobject-introspection-1.54.1-new/tools/g-ir-tool-template.in
+--- gobject-introspection-1.54.1/tools/g-ir-tool-template.in	2016-03-14 18:49:01.000000000 +0800
++++ gobject-introspection-1.54.1-new/tools/g-ir-tool-template.in	2017-12-06 23:57:23.878302111 +0800
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env @PYTHON@
++#!/usr/bin/env python
+ # -*- Mode: Python -*-
+ # GObject-Introspection - a framework for introspecting GObject libraries
+ # Copyright (C) 2008  Johan Dahlin

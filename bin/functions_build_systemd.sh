@@ -9,8 +9,8 @@ UTILLINUXFILE=util-linux-2.31
 generate_script     utillinux   $UTILLINUXFILE                                                                          \
     --sudo-build --make-before-install                                                                                  \
     '--prescript=autoreconf -v --install --force'                               \
-    '--config=--host=$MY_TARGET --target=$MY_TARGET --prefix=/usr --disable-static --without-python --with-sysroot=$SDKDIR'            \
-    '--depends=ncursesw libz libpam'                                                                                           \
+    '--config=--host=$MY_TARGET --target=$MY_TARGET --prefix=/usr --disable-static --without-python --with-sysroot=$SDKDIR --disable-pylibmount --disable-gtk-doc --disable-plymouth_support --without-systemd --without-systemdsystemunitdir --without-python'            \
+    '--depends=ncursesw libz libpam cross_autogen_env'                                                                                           \
     '--install_target=install PATH=$PATH'                                                                               \
     '--deploy-rootfs=/bin /sbin /lib /usr -/usr/include -/usr/lib/*.la -/usr/lib/pkgconfig -/usr/share/man -/usr/share/doc'    \
     '--deploy-sdk=/lib /usr/lib /usr/include'

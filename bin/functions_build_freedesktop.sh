@@ -94,7 +94,7 @@ function prepare_pkgconfig_for_sysroot()
 RUNDIR=\$(cd \`dirname \$0\`; pwd)
 MYNAME=\`basename \$0\`
 ROOTDIR=\$(cd \`dirname \$0\`/../..; pwd)
-PKG_CONFIG_LIBDIR="yes"       PKG_CONFIG_SYSROOT_DIR='='    \$RUNDIR/\${MYNAME}-real "\$@" 1>\$RUNDIR/\${MYNAME}-last-response
+\$RUNDIR/\${MYNAME}-real "\$@" 1>\$RUNDIR/\${MYNAME}-last-response
 ret=\$?
 sed -r "s#(^|\ +)/usr#\1\$ROOTDIR/usr#g" \$RUNDIR/\${MYNAME}-last-response
 exit \$ret

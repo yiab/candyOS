@@ -72,8 +72,8 @@ construct_pi()
     exit;
 }
 
+NATIVE_PREREQUIRST+=' cmake '
 RPI_USERLAND=userland
-
 generate_script     rpi_userland  $RPI_USERLAND                                   \
     '--patch=userland_no_march_flag.patch'                                        \
     '--script=./buildme $TEMPDIR/dist'                                            \

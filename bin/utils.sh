@@ -317,7 +317,8 @@ set_ccache_config()
         unalias g++
     fi;
 }
-# initenv，每个软件包开始编译时的路径
+#####################################################
+# initenv，交叉编译时的环境变量
 initenv()
 {
 	export PATH=$ADDITION_PATH:$SDKDIR/usr/sbin:$SDKDIR/usr/bin:$SDKDIR/sbin:$SDKDIR/bin
@@ -325,10 +326,10 @@ initenv()
 	export LD_LIBRARY_PATH=$DEVDIR/usr/lib:$DEVDIR/lib
 
     export MY_TOOLCHAIN_FLAGS="$TOOLCHAIN_FLAGS"
-	export CFLAGS="$ADDITION_CFLAGS" # -I$SDKDIR/include -I$SDKDIR/usr/include"
+	export CFLAGS="$ADDITION_CFLAGS" 
 	export CXXFLAGS=$CFLAGS
 	export CPPFLAGS=$CFLAGS
-	export LDFLAGS="$ADDITION_LDFLAGS" # -L$SDKDIR/lib -L$SDKDIR/usr/lib"
+	export LDFLAGS="$ADDITION_LDFLAGS"
 	export LIBS=""
 	
     unset_pkgconfig_env
@@ -337,16 +338,22 @@ initenv()
     export PKG_CONFIG_SYSROOT_DIR='='
   
     set_ccache_config
-    unset PKG_CONFIG_ALLOW_SYSTEM_CFLAGS
-    unset PKG_CONFIG_ALLOW_SYSTEM_LIBS
-#	export PKG_CONFIG_SYSROOT_DIR='='       #$SDKDIR
-#	export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=yes
-#	export PKG_CONFIG_ALLOW_SYSTEM_LIBS=yes
     
     # python脚本
-    unset PYTHONPATH
- #   export PYTHONPATH=`ls -d $SDKDIR/usr/lib/python2*/dist-packages 2>/dev/null`
- #   export PYTHONPATH=$PYTHONPATH:`ls -d $SDKDIR/usr/lib/python2*/site-packages 2>/dev/null`
+    unset PYTHONPATH            # PYTHONPATH, ubuntu定制的路径在dist-packages，否则缺省在site-packages
+    local TDIR=`ls -d $SDKDIR/usr/lib/python2*/dist-packages 2>/dev/null`
+    if [ -n $TDIR ]; then
+        export PYTHONPATH=$PYTHONPATH:$TDIR
+    fi;
+    TDIR=`ls -d $SDKDIR/usr/lib/python2*/site-packages 2>/dev/null`
+    if [ -n $TDIR ]; then
+        export PYTHONPATH=$PYTHONPATH:$TDIR
+    fi;
+    
+    unset PYTHONHOME            # PYTHONHOME, 应指定为<sysroot>/usr路径(即编译时的prefix)
+    if [ -f $SDKDIR/usr/bin/python ]; then
+        export PYTHONHOME=$SDKDIR/usr
+    fi;
     hash -r
 }
 
@@ -370,7 +377,16 @@ dispenv()
 	else
 	    echo "unset PKG_CONFIG_LIBDIR"
 	fi
-	echo "export PYTHONPATH=$PYTHONPATH"
+	if [ t"$PYTHONPATH" != "t" ]; then
+	    echo "export PYTHONPATH=$PYTHONPATH"
+	else
+	    echo "unset PYTHONPATH"
+	fi
+	if [ t"$PYTHONHOME" != "t" ]; then
+	    echo "export PYTHONHOME=$PYTHONHOME"
+	else
+	    echo "unset PYTHONHOME"
+	fi
 	echo "export CCACHE=$CCACHE"
 	echo "==============================================================================="
 }
@@ -418,9 +434,21 @@ init_native_env()
 #	export PKG_CONFIG_ALLOW_SYSTEM_LIBS=1
 	unset PKG_CONFIG_LIBDIR
 
-    unset PYTHONPATH
- #  export PYTHONPATH=`ls -d $DEVDIR/usr/lib/python2*/dist-packages 2>/dev/null`
- #   export PYTHONPATH=$PYTHONPATH:`ls -d $DEVDIR/usr/lib/python2*/site-packages 2>/dev/null`
+    unset PYTHONPATH            # PYTHONPATH, ubuntu定制的路径在dist-packages，否则缺省在site-packages
+    local TDIR=`ls -d $DEVDIR/usr/lib/python2*/dist-packages 2>/dev/null`
+    if [ -n $TDIR ]; then
+        export PYTHONPATH=$PYTHONPATH:$TDIR
+    fi;
+    TDIR=`ls -d $DEVDIR/usr/lib/python2*/site-packages 2>/dev/null`
+    if [ -n $TDIR ]; then
+        export PYTHONPATH=$PYTHONPATH:$TDIR
+    fi;
+    
+    unset PYTHONHOME            # PYTHONHOME, 应指定为<sysroot>/usr路径(即编译时的prefix)
+    if [ -f $DEVDIR/usr/bin/python ]; then
+        export PYTHONHOME=$DEVDIR/usr
+    fi;
+    
     hash -r
 }
 unset_pkgconfig_env()
@@ -431,3 +459,33 @@ unset_pkgconfig_env()
 	unset PKG_CONFIG_ALLOW_SYSTEM_LIBS
 	unset PKG_CONFIG_LIBDIR
 }
+
+# 获取相对路径
+# 例如： 
+#    dir1='/home/baiyun/git/candyOS/temp/dist0/usr/lib/python2.7/site-packages'
+#    dir2='/home/baiyun/git/candyOS/temp/dist0/usr/lib/gobject-introspection/giscanner'
+#    get_rel_dir $dir1 $dir2
+# 返回"../../gobject-introspection/giscanner"
+# 各个参数可以使用相对路径，目录可以不存在
+function get_rel_dir()
+{
+    local dir1=`readlink -m $1`
+    local dir2=`readlink -m $2`
+    if [ -z $dir1 ] || [ -z $dir2 ]; then
+        echo "Usage: get_rel_dir <current_dir> <target_dir>"
+        exit 1;
+    fi;
+    
+    # 去掉前缀
+    local prefix=$dir1
+    local rel0=''
+    local plen=${#prefix}
+    until [ -z ${prefix} ] || [ ${prefix} = ${dir2:0:$plen} ]; do
+        prefix=${prefix%/*}
+        rel0=$rel0'../'
+        plen=${#prefix}
+    done;
+    local relpath=$rel0${dir2:$plen+1}
+    echo $relpath
+}
+

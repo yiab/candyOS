@@ -32,22 +32,23 @@ deploy()
     [ -f $CACHEDIR/$_pkg_name.tar.gz ] || fail "Cache中不存在$_pkg_name.tar.gz";
     shift 2
     
+    local _scripts=''
     local _add_list=""
     local _add_cmd=""
     local _remove_list=""
     local _remove_cmd=""
     until [ -z "$1" ]; do
-        if [ "${1:0:2}" == "-/" ]; then
+        if [ "${1:0:1}" == "=" ]; then
+            _scripts=$_scripts' '${1:1}
+        elif [ "${1:0:2}" == "-/" ]; then
             _remove_list=$_remove_list" "${1:1}
             _remove_cmd=$_remove_cmd" ."${1:1}
-        else 
-            if [ "${1:0:1}" == "/" ]; then
-                _add_list=$_add_list" "${1}
-                _add_cmd=$_add_cmd" ."${1}
-            else
-                echo "Add & Remove 的内容必须以/打头 : '$1'"
-                exit;
-            fi;
+        elif [ "${1:0:1}" == "/" ]; then
+            _add_list=$_add_list" "${1}
+            _add_cmd=$_add_cmd" ."${1}
+        else
+            echo "Add & Remove 的内容必须以/打头 : '$1'"
+            exit;
         fi;
         shift;
     done;
@@ -61,7 +62,7 @@ deploy()
         _deploy_dir=$SDKDIR
         local _change_la1_dir='='
         local _change_la2_dir='='
-        local _change_python='Y'
+#        local _change_python='Y'
         ;;
     "rootfs")
         _deploy_dir=$INSTDIR
@@ -71,7 +72,7 @@ deploy()
         #_change_pc="Y"
         #local _change_la1_dir=$DEVDIR
         #local _change_la2_dir=$DEVDIR
-        local _change_python='Y'
+#        local _change_python='Y'
         ;;
     "boot")
         _deploy_dir=$BOOTDIR
@@ -118,11 +119,20 @@ deploy()
             fi;
         done;
     fi;
-    if [ y$_change_python = 'yY' ]; then
-        sudo find * -type f -exec sed -i "1,1s@^#\!/usr/bin/python@#\!${_deploy_dir}/usr/bin/python@" {} \; || fail "修改python引用失败！"
-    fi;
+######################################################
+# 有些python脚本会使用#!/usr/bin/python打头，而python会跟据可执行程序的绝对位置来决定搜索路径
+# 所以会想到修改这些值，指到$SDKDIR/usr/bin/python，但这种情况太多了，所以改不过来
+# 实际上，可以使用 PYTHONHOME 这个环境变量，该变量需要指向<sysroot>/usr目录
+#    if [ y$_change_python = 'yY' ]; then
+#        sudo find * -type f -exec sed -i "1,1s@^#\!/usr/bin/python@#\!${_deploy_dir}/usr/bin/python@" {} \; || fail "修改python引用失败！"
+#    fi;
     
     if [ -n "$_deploy_dir" ]; then
+        if [ -n "${_scripts}" ]; then
+            for s in ${_scripts}; do
+                exec_cmd "$s"
+            done;
+        fi;
         for d in $_add_cmd; do
             if [ -d $d ]; then
                 sudo mkdir -p $_deploy_dir/$d
@@ -138,3 +148,44 @@ deploy()
     cd $TEMPDIR
     sudo rm -rf $TEMPDIR/.cacheout #1>/dev/null 2>&1
 }
+
+
+# 获取python的模块路径，例如:
+#       PYMODULEDIR=`python_module_dir /usr`
+function python_module_dir()
+{
+    local prefix=$1
+    if [ -z $prefix ]; then
+        prefix='/usr'
+    fi;
+    
+    # 这一段代码，来自autotool自动生成的configure脚本
+    python -c "\
+import sys
+# Prefer sysconfig over distutils.sysconfig, for better compatibility
+# with python 3.x.  See automake bug#10227.
+try:
+    import sysconfig
+except ImportError:
+    can_use_sysconfig = 0
+else:
+    can_use_sysconfig = 1
+# Can't use sysconfig in CPython 2.7, since it's broken in virtualenvs:
+# <https://github.com/pypa/virtualenv/issues/118>
+try:
+    from platform import python_implementation
+    if python_implementation() == 'CPython' and sys.version[:3] == '2.7':
+        can_use_sysconfig = 0
+except ImportError:
+    pass
+
+sitedir = sysconfig.get_path('purelib', vars={'base':'$prefix'})
+if can_use_sysconfig:
+    sitedir = sysconfig.get_path('purelib', vars={'base':'$prefix'})
+else:
+    from distutils import sysconfig
+    sitedir = sysconfig.get_python_lib(0, 0, prefix='$prefix')
+sys.stdout.write(sitedir)
+"
+}
+

@@ -1,0 +1,10 @@
+diff -Naur Python-2.7.14/Misc/python-config.in Python-2.7.14-new/Misc/python-config.in
+--- Python-2.7.14/Misc/python-config.in	2017-09-17 01:38:35.000000000 +0800
++++ Python-2.7.14-new/Misc/python-config.in	2017-12-07 13:18:36.659165146 +0800
+@@ -1,4 +1,5 @@
+-#!@EXENAME@
++#!/usr/bin/env python
++# NOT USING EXENAME=@EXENAME@ expansion
+ 
+ import sys
+ import os

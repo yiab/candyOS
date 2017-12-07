@@ -45,7 +45,8 @@ generate_script  atk     $ATKFILE     \
     '--deploy-sdk=/usr/include /usr/lib'                                    \
     '--deploy-rootfs=/usr/lib /usr/share/locale -/usr/lib/pkgconfig -/usr/lib/*.la'        \
     '--depends=glib '
-    
+#export XDG_DATA_DIRS=/home/baiyun/git/candyOS/dist/pi/sdk/usr/share
+
 ###########################
 # 编译 at-spi2-core
 ATKSPI2FILE=at-spi2-core-2.20.2
@@ -337,22 +338,29 @@ build_gtk2()
 # http://ftp.gnome.org/pub/gnome/sources/gobject-introspection/
 GOBJECT_INTROSPECTION_FILE=gobject-introspection-1.54.1
 generate_script  cross_gobject_introspection     $GOBJECT_INTROSPECTION_FILE     \
+    --build-native              \
+    '--patch=gobject-introspection-crosscompile.patch'   \
     '--prescript=autoreconf -v --install --force'                                \
-    '--config=--prefix=/usr --host=$MY_TARGET --with-sysroot=$SDKDIR --disable-static  --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf --disable-doctool'  \
+    '--config=--prefix=/usr --disable-static  --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf --disable-doctool'  \
     '--install_target=install-strip'    \
-    '--deploy-sdk=/usr/bin /usr/include /usr/lib /usr/share -/usr/share/man'           \
-    '--depends=glib cross_python native_gobject_introspection' --debug
-
-generate_script  native_gobject_introspection     $GOBJECT_INTROSPECTION_FILE     \
-    --build-native  \
-    '--prescript=autoreconf -v --install --force'                                \
-    '--config=--prefix=$DEVDIR/usr --disable-static  --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf --disable-doctool'  \
-    '--install_target=install-strip'    \
-    '--deploy-sdk=/usr/bin '           \
-    '--deploy-dev=/usr/lib -/usr/lib/pkgconfig' \
-    '--depends=native_glib native_python' 
-    
-#-with-sysroot=$SDKDIR
+    '--postscript=make_python_module_link'     \
+    '--deploy-sdk=/usr/bin /usr/include /usr/lib /usr/share -/usr/share/man =cross_gobject_introspection_addlink'           \
+    '--deploy-dev=/usr/lib -/usr/bin -/usr/share -/usr/include' \
+    '--depends=native_glib native_python'
+# 这个地方有点拧巴，gobject-introspection更多的时候只是一种编译时用到的工具而已。真正起作用，仍然是在运行时的python。所以没有必要编译native的版本。但这个库是运行在build机上的。
+function cross_gobject_introspection_addlink()
+{
+    echo "adding link" 
+}
+function make_python_module_link()
+{
+    local PYMODULEDIR=`python_module_dir /usr`
+    PYMODULEDIR=`get_rel_dir $SDKDIR $PYMODULEDIR`
+    cd $TEMPDIR/dist
+    mkdir -p ./$PYMODULEDIR  || fail "创建目录失败"
+    local relname=`get_rel_dir ./$PYMODULEDIR usr/lib/gobject-introspection/giscanner`
+    ln -s $relname ./$PYMODULEDIR/giscanner
+}
 
 ##############################
 # 编译 gtk+-3.7.6

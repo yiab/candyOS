@@ -118,6 +118,7 @@ generate_script  native_gettext     $GETTEXT     \
 # 编译 Python
 PYTHON27FILE=Python-2.7.14
 generate_script     cross_python   $PYTHON27FILE                    \
+    '--patch=python-config-crosscompile.patch'    \
     '--depends=native_python expat ncursesw libbz2 openssl cross_gettext libffi'                         \
     '--script=export PKG_CONFIG_SYSROOT_DIR=$SDKDIR'       \
     '--script=autoreconf -v --install --force'  \
@@ -128,13 +129,14 @@ generate_script     cross_python   $PYTHON27FILE                    \
     '--script=exec_build V=1 install DESTDIR=$TEMPDIR/dist'   \
     '--script=cp Lib/compileall.py.bak $TEMPDIR/dist/usr/lib/python2.7/compileall.py'   \
     '--deploy-sdk=/usr/include -/usr/lib -/usr/bin -/usr/share'
+# 交叉编译的python，不能在build机上compileall，这一步只能等到运行时才能进行了。
 
 generate_script     native_python   $PYTHON27FILE                    \
     --build-native      \
+    '--patch=python-config-crosscompile.patch'    \
     '--depends=native_expat native_gettext'                         \
     '--prescript=autoreconf -v --install --force'  \
     '--config=--prefix=/usr --enable-optimizations --with-system-expat --without-pydebug' \
     '--deploy-sdk=/usr/bin /usr/lib'    \
     '--deploy-dev=/ -/usr/share' 
     
-#generate_alias  native_python  cross_python
