@@ -55,7 +55,6 @@ PARAM+=" --disable-xtest"                       #
 PARAM+=" --enable-xv"                           #
 PARAM+=" --enable-xvmc"                         #
 generate_script     libxcb   x11/$X11_LIBXCB                                                \
-    '--patch=libxcb-crosscompiling.patch'       \
     '--prescript=autoreconf -v --install --force'                                               \
     "--config=$PARAM"    \
     '--depends=x11_util_macros xcb_proto x11_libpthreadstubs x11_libxau x11_libxdmcp cross_python'        \

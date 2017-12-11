@@ -91,13 +91,17 @@ function prepare_pkgconfig_for_sysroot()
     cp usr/bin/pkg-config usr/bin/$MY_TARGET-pkg-config-real
     cat << MY_EOF > usr/bin/$MY_TARGET-pkg-config
 #!/bin/bash
-RUNDIR=\$(cd \`dirname \$0\`; pwd)
-MYNAME=\`basename \$0\`
-ROOTDIR=\$(cd \`dirname \$0\`/../..; pwd)
-\$RUNDIR/\${MYNAME}-real "\$@" 1>\$RUNDIR/\${MYNAME}-last-response
-ret=\$?
-sed -r "s#(^|\ +)/usr#\1\$ROOTDIR/usr#g" \$RUNDIR/\${MYNAME}-last-response
-exit \$ret
+if [ -n "\$CANDY_PKG_CONFIG_SYSROOT_PATCH" ]; then
+    RUNDIR=\$(cd \`dirname \$0\`; pwd)
+    MYNAME=\`basename \$0\`
+    ROOTDIR=\$(cd \`dirname \$0\`/../..; pwd)
+    \$RUNDIR/\${MYNAME}-real "\$@" 1>\$RUNDIR/\${MYNAME}-last-response
+    ret=\$?
+    sed -r "s#(^|\ +)/usr#\1\$ROOTDIR/usr#g" \$RUNDIR/\${MYNAME}-last-response
+    exit \$ret
+else
+    \$0-real "\$@"
+fi;
 MY_EOF
     chmod +x usr/bin/$MY_TARGET-pkg-config
 }
@@ -159,7 +163,7 @@ FREEDESKTOP_SYSTEMDFILE=systemd-204
 PARAM='--host=$MY_TARGET --prefix=/ --exec-prefix=/usr --datarootdir=/usr/share --sbindir=/sbin --sysconfdir=/etc --bindir=/sbin --sbindir=/sbin --libexecdir=/lib --with-rootlibdir=/lib --with-sysroot=$SDKDIR'
 PARAM+=" --disable-static --enable-nls --enable-kmod --enable-blkid --enable-pam --disable-gcrypt --enable-gudev"
 PARAM+=' --with-dbuspolicydir=/etc/dbus-1 --with-dbussessionservicedir=/usr/share/dbus-1/services --with-dbussystemservicedir=/usr/share/dbus-1/system-services --with-dbusinterfacedir=/usr/share/dbus-1/interfaces'
-PARAM+=" --without-python --disable-manpages --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf --disable-keymap --disable-tests" 
+PARAM+=" --without-python --disable-manpages --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf --disable-keymap --disable-tests --disable-introspection" 
 PARAM+=" ac_cv_func_malloc_0_nonnull=yes"
 generate_script     systemd   freedesktop/$FREEDESKTOP_SYSTEMDFILE                                                                          \
     "--config=$PARAM"                                     \

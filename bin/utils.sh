@@ -1,11 +1,10 @@
 #!/bin/sh
 
-_subdir=`dirname $0`/utils
-source $_subdir/util_tick.sh
-source $_subdir/util_dep_check.sh
-source $_subdir/util_gen_script.sh
-source $_subdir/util_deploy.sh
-source $_subdir/util_check_cross.sh
+source utils/util_tick.sh
+source utils/util_dep_check.sh
+source utils/util_gen_script.sh
+source utils/util_deploy.sh
+source utils/util_check_cross.sh
 
 # QUIETLY='1>/dev/null 2>/dev/null'
 concurrent_make=""
@@ -354,6 +353,8 @@ initenv()
     if [ -f $SDKDIR/usr/bin/python ]; then
         export PYTHONHOME=$SDKDIR/usr
     fi;
+    
+    export CANDY_PKG_CONFIG_SYSROOT_PATCH="yes"
     hash -r
 }
 
@@ -387,6 +388,12 @@ dispenv()
 	else
 	    echo "unset PYTHONHOME"
 	fi
+	if [ t"$CANDY_PKG_CONFIG_SYSROOT_PATCH" != "t" ]; then
+	    echo "export CANDY_PKG_CONFIG_SYSROOT_PATCH=$CANDY_PKG_CONFIG_SYSROOT_PATCH"
+	else
+	    echo "unset CANDY_PKG_CONFIG_SYSROOT_PATCH"
+	fi
+	
 	echo "export CCACHE=$CCACHE"
 	echo "==============================================================================="
 }
@@ -449,6 +456,7 @@ init_native_env()
         export PYTHONHOME=$DEVDIR/usr
     fi;
     
+    unset CANDY_PKG_CONFIG_SYSROOT_PATCH
     hash -r
 }
 unset_pkgconfig_env()

@@ -265,7 +265,7 @@ X11_LIBXRANDR=libXrandr-1.5.1
 generate_script     x11_libxrandr   x11/$X11_LIBXRANDR                         \
     '--prescript=autoreconf -v --install --force'                                \
     '--config=--prefix=/usr --host=$MY_TARGET --with-sysroot=$SDKDIR --disable-static --enable-malloc0returnsnull'                  \
-    '--depends=x11_util_macros x11_libx11 x11_renderproto x11_xextproto x11_libxext x11_libxrender'                       \
+    '--depends=x11_util_macros x11_libx11 x11_renderproto x11_xextproto x11_libxext x11_libxrender x11_randrproto'                  \
     '--deploy-sdk=/ -/usr/lib/*.a '                              \
     '--deploy-rootfs=/usr/lib  -/usr/lib/pkgconfig'    
  

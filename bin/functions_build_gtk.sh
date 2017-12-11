@@ -38,34 +38,38 @@ generate_script  glib     $GLIBFILE     \
 #libiconv libpcre
 
 ###########################
-# gnome-atk
-ATKFILE=atk-2.20.0
+# atk
+# http://ftp.gnome.org/pub/gnome/sources/atk/2.27/atk-2.27.1.tar.xz
+ATKFILE=atk-2.27.1
 generate_script  atk     $ATKFILE     \
-    '--config=--host=$MY_TARGET --target=$MY_TARGET --prefix=/usr --disable-static --with-sysroot=$SDKDIR --disable-glibtest --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf --with-gnu-ld '  \
+    '--prescript=export PKG_CONFIG_SYSROOT_DIR=$SDKDIR'     \
+    '--config=--host=$MY_TARGET --target=$MY_TARGET --prefix=/usr --disable-static --with-sysroot=$SDKDIR --disable-glibtest --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf --with-gnu-ld --disable-introspection'  \
     '--deploy-sdk=/usr/include /usr/lib'                                    \
     '--deploy-rootfs=/usr/lib /usr/share/locale -/usr/lib/pkgconfig -/usr/lib/*.la'        \
-    '--depends=glib '
+    '--depends=glib' 
 #export XDG_DATA_DIRS=/home/baiyun/git/candyOS/dist/pi/sdk/usr/share
 
 ###########################
 # 编译 at-spi2-core
-ATKSPI2FILE=at-spi2-core-2.20.2
+# http://ftp.gnome.org/pub/gnome/sources/at-spi2-core/2.26/at-spi2-core-2.26.2.tar.xz
+ATKSPI2FILE=at-spi2-core-2.26.2
 generate_script  atk_spi2     $ATKSPI2FILE     \
     '--prescript=autoreconf -v --install --force'                                \
-    '--config=--host=$MY_TARGET --target=$MY_TARGET --prefix=/usr --disable-static'  \
-    '--deploy-sdk=/'                                                \
-    '--deploy-rootfs=/usr/lib /usr/share/locale -/usr/lib/pkgconfig'        \
-    '--depends=atk dbus xorg_server' --debug --show-usage
+    '--config=--host=$MY_TARGET --target=$MY_TARGET --prefix=/usr --disable-static --with-sysroot=$SDKDIR --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf --enable-x11 --disable-introspection'  \
+    '--deploy-sdk=/usr/include /usr/lib /usr/share -/usr/etc -/usr/libexec '                                                \
+    '--deploy-rootfs=/usr/etc /usr/lib /usr/libexec /usr/share -/usr/lib/pkgconfig -/usr/lib/*.la'        \
+    '--depends=cross_autogen_env cross_gobject_introspection atk dbus x11_libx11 x11_libxtst x11_libxi'
 
 ###########################
 # 编译 at-spi2-atk
-ATKBRIDGEFILE=at-spi2-atk-2.20.1
-generate_script  atk_atk_bridge     $ATKBRIDGEFILE     \
+# http://ftp.gnome.org/pub/gnome/sources/at-spi2-atk/2.26/at-spi2-atk-2.26.1.tar.xz
+ATKBRIDGEFILE=at-spi2-atk-2.26.1
+generate_script  atk_bridge     $ATKBRIDGEFILE     \
     '--prescript=autoreconf -v --install --force'                                \
-    '--config=--host=$MY_TARGET --target=$MY_TARGET --prefix=/usr --disable-static'  \
-    '--deploy-sdk=/'                                                \
-    '--deploy-rootfs=/usr/lib /usr/share/locale -/usr/lib/pkgconfig'        \
-    '--depends=atk atk_spi2 dbus' --debug --show-usage
+    '--config=--host=$MY_TARGET --target=$MY_TARGET --prefix=/usr --disable-static --with-sysroot=$SDKDIR --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf --disable-introspection'  \
+    '--deploy-sdk=/usr/include /usr/lib'                                                \
+    '--deploy-rootfs=/usr/lib -/usr/lib/pkgconfig -/usr/lib/*.la'        \
+    '--depends=cross_autogen_env cross_gobject_introspection atk atk_spi2 dbus'
 
 ###########################
 # cairo-1.12.8
@@ -75,7 +79,7 @@ generate_script  cairo     $CAIROFILE     \
     '--config=--host=$MY_TARGET --prefix=/usr --sysconfdir=/etc --disable-static --with-sysroot=$SDKDIR --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf --enable-vg --enable-egl --with-x --enable-fc --enable-ft --enable-xlib --disable-xlib-xrender --enable-glesv2 --enable-png'  \
     '--deploy-sdk=/usr/include /usr/lib'                                                \
     '--deploy-rootfs=/usr/lib -/usr/bin -/usr/lib/pkgconfig -/usr/lib/cairo -/usr/lib/pkgconfig -/usr/lib/*.la'        \
-    '--depends=glib libz libpng x11_pixman libfreetype fontconfig x11_xproto x11_libx11 x11_libxext x11_libxrender expat egl vg gles'
+    '--depends=cross_autogen_env glib libz libpng x11_pixman libfreetype fontconfig x11_xproto x11_libx11 x11_libxext x11_libxrender expat egl vg gles'
 
 ###########################
 # pango
@@ -84,7 +88,7 @@ generate_script  pango     $PANGOFILE     \
     '--config=--host=$MY_TARGET --prefix=/usr --sysconfdir=/etc --disable-static --with-sysroot=$SDKDIR --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf --disable-installed-tests --with-cairo --with-xft'  \
     '--deploy-sdk=/usr/include /usr/lib'                                                \
     '--deploy-rootfs=/usr/lib /usr/bin -/usr/lib/pkgconfig -/usr/lib/*.la'        \
-    '--depends=fontconfig harfbuzz glib cairo libfreetype x11_libxft'
+    '--depends=fontconfig harfbuzz glib cairo libfreetype x11_libxft native_glib'
 
 ###########################
 # desktop-file-utils-0.21
@@ -94,7 +98,7 @@ generate_script  desktop_fileutils     $DESKTOP_FILEUTILS     \
     '--config=--host=$MY_TARGET --target=$MY_TARGET --prefix=/usr --disable-static'  \
     '--deploy-sdk=/'                                                \
     '--deploy-rootfs=/usr/lib /usr/bin -/usr/lib/pkgconfig'        \
-    '--depends=glib' --debug --show-usage
+    '--depends=cross_autogen_env glib' --debug --show-usage
 
 ###########################
 # gdk-pixbuf
@@ -107,7 +111,7 @@ generate_script  gdkpixbuf     $GDKPIXBUF     \
     '--config=--host=$MY_TARGET --target=$MY_TARGET --prefix=/usr --sysconfdir=/etc --disable-static --with-sysroot=$SDKDIR --with-libpng --with-libjpeg --with-libtiff --with-x11 --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf --disable-man --disable-rpath --disable-debug --disable-coverage --disable-installed-tests --disable-always-build-tests --enable-nls'  \
     '--deploy-sdk=/usr/lib /usr/include'                                                \
     '--deploy-rootfs=/usr/bin /usr/lib /usr/share/locale /usr/share/thumbnailers -/usr/lib/pkgconfig -/usr/lib/*.la -/usr/lib/gdk*/*/*/*.la'        \
-    '--depends=shared_mime_info glib libtiff libjpeg libpng x11_libx11'
+    '--depends=cross_autogen_env shared_mime_info glib libtiff libjpeg libpng x11_libx11'
 #!!!!!!
 # 这个软件包需要在运行时配置!
 
@@ -121,7 +125,7 @@ PARAM+=" --disable-tests --disable-ansi --disable-verbose-mode --disable-asserts
 PARAM+=" --enable-bash-completion ac_cv_have_abstract_sockets=yes"
 		
 generate_script  dbusglib     $DBUSGLIBFILE     \
-    '--prescript=autoreconf -v --install --force'                                \
+    '--prescript=cross_autogen_env autoreconf -v --install --force'                                \
     "--config=$PARAM"  \
     '--deploy-sdk=/'                                                \
     '--deploy-rootfs=/usr/bin /usr/lib /usr/libexec /usr/etc -/usr/lib/pkgconfig'        \
@@ -139,6 +143,7 @@ GNOME_MIME_DATA=gnome-mime-data-2.18.0
 generate_script  gnome_mime_data     $GNOME_MIME_DATA     \
     '--prescript=autoreconf -v --install --force'                                \
     '--config=--host=$MY_TARGET --prefix=/usr --disable-static'  \
+    '--depends=cross_autogen_env'   \
     '--deploy-sdk=/'                                                \
     '--deploy-rootfs=/usr'        \
     --debug --show-usage
@@ -149,6 +154,7 @@ POPTFILE=popt-1.16
 generate_script  popt     $POPTFILE     \
     '--prescript=autoreconf -v --install --force'                                \
     '--config=--host=$MY_TARGET --prefix=/usr --disable-static --disable-rpath --enable-nls'  \
+    '--depends=cross_autogen_env'   \
     '--deploy-sdk=/usr/lib -/usr/lib/pkgconfig'                                                \
     '--deploy-rootfs=/usr/lib -/usr/lib/pkgconfig'        \
     --debug --show-usage
@@ -227,7 +233,7 @@ generate_script  libidl     $LIBIDLFILE     \
     '--config=--host=$MY_TARGET --prefix=/usr --disable-static libIDL_cv_long_long_format=ll'  \
     '--deploy-sdk=/usr/lib -/usr/lib/pkgconfig'                                                \
     '--deploy-rootfs=/usr/lib /usr/share -/usr/lib/pkgconfig'        \
-    '--depends=glib' --debug  
+    '--depends=cross_autogen_env glib' --debug  
 
 ##############################
 # 编译 gtk+-2
@@ -245,7 +251,7 @@ generate_script  gtk2     $GTK2FILES     \
     "--config=$PARAM"  \
     '--deploy-sdk=/usr/lib -/usr/lib/pkgconfig'                                                \
     '--deploy-rootfs=/usr/lib /usr/share -/usr/lib/pkgconfig'        \
-    '--depends=glib atk pango gdkpixbuf cairo' --debug  --show-usage
+    '--depends=cross_autogen_env glib atk pango gdkpixbuf cairo' --debug  --show-usage
 #    
 # libIDL_cv_long_long_format=ll
 	
@@ -346,7 +352,7 @@ generate_script  cross_gobject_introspection     $GOBJECT_INTROSPECTION_FILE    
     '--postscript=make_python_module_link'     \
     '--deploy-sdk=/usr/bin /usr/include /usr/lib /usr/share -/usr/share/man =cross_gobject_introspection_addlink'           \
     '--deploy-dev=/usr/lib -/usr/bin -/usr/share -/usr/include' \
-    '--depends=native_glib native_python'
+    '--depends=cross_autogen_env native_glib native_python'
 # 这个地方有点拧巴，gobject-introspection更多的时候只是一种编译时用到的工具而已。真正起作用，仍然是在运行时的python。所以没有必要编译native的版本。但这个库是运行在build机上的。
 function cross_gobject_introspection_addlink()
 {
@@ -354,26 +360,37 @@ function cross_gobject_introspection_addlink()
 }
 function make_python_module_link()
 {
-    local PYMODULEDIR=`python_module_dir /usr`
-    PYMODULEDIR=`get_rel_dir $SDKDIR $PYMODULEDIR`
+    local PYMODULEDIR=`python_module_dir`
     cd $TEMPDIR/dist
-    mkdir -p ./$PYMODULEDIR  || fail "创建目录失败"
-    local relname=`get_rel_dir ./$PYMODULEDIR usr/lib/gobject-introspection/giscanner`
-    ln -s $relname ./$PYMODULEDIR/giscanner
+    mkdir -p .$PYMODULEDIR  || fail "创建目录失败"
+    local relname=`get_rel_dir .$PYMODULEDIR usr/lib/gobject-introspection/giscanner`
+    ln -s $relname .$PYMODULEDIR/giscanner
 }
+
+
+##############################
+# 编译 libepoxy-1.4.3
+# https://github.com/anholt/libepoxy/releases
+EPOXYFILES=libepoxy-1.4.3
+generate_script  epoxy     $EPOXYFILES     \
+    '--prescript=autoreconf -v --install --force'                                \
+    '--config=--prefix=/usr --host=$MY_TARGET --disable-static --enable-egl --with-sysroot=$SDKDIR ac_cv_prog_PYTHON=python2'  \
+    '--deploy-sdk=/usr/lib /usr/include'                                                \
+    '--deploy-rootfs=/usr/lib -/usr/lib/pkgconfig -/usr/lib/*.la'        \
+    '--depends=cross_autogen_env egl cross_python x11_libx11'
 
 ##############################
 # 编译 gtk+-3.7.6
 # http://ftp.gnome.org/pub/gnome/sources/gtk+/
 GTK3FILES=gtk+-3.22.26
-PARAM="--prefix=/usr --host=$MY_TARGET --disable-static --disable-debug --disable-maintainer-mode --disable-glibtest  --disable-test-print-backend  --disable-glibtest --enable-debug=no --disable-cups --with-x --enable-x11-backend ac_cv_func_mmap_fixed_mapped=yes --without-atk-bridge"
+PARAM='--prefix=/usr --host=$MY_TARGET --disable-static --with-sysroot=$SDKDIR --disable-debug --disable-maintainer-mode --disable-glibtest  --disable-test-print-backend  --disable-glibtest --enable-debug=no --disable-cups --with-x --enable-x11-backend ac_cv_func_mmap_fixed_mapped=yes --disable-introspection --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf --disable-man'
 generate_script  gtk3     $GTK3FILES     \
     '--prescript=autoreconf -v --install --force'                                \
     "--config=$PARAM"  \
-    '--deploy-sdk=/usr/lib -/usr/lib/pkgconfig'                                                \
-    '--deploy-rootfs=/usr/lib /usr/share -/usr/lib/pkgconfig'        \
-    '--depends=glib cross_gobject_introspection atk pango gdkpixbuf cairo x11_libx11 x11_libxi x11_libxrandr' --debug  --show-usage
-#     	
+    '--deploy-sdk=/usr/lib /usr/include /usr/share -/usr/man'                                                \
+    '--deploy-rootfs=/usr/bin /usr/etc /usr/lib /usr/share -/usr/lib/pkgconfig -/usr/lib/*.la -/usr/share/aclocal -/usr/share/man'        \
+    '--depends=cross_autogen_env glib cross_gobject_introspection atk pango gdkpixbuf cairo x11_libx11 x11_libxext x11_libxi x11_libxrandr x11_libxfixes epoxy atk_bridge'
+# pango pangocairo gdk-pixbuf-2.0 >= 2.30.0 cairo >= 1.14.0 cairo-gobject >= 1.14.0 gio-unix-2.0 >= 2.49.4 fontconfig x11 xext xi xrandr xfixes    cairo-xlib epoxy >= 1.0
 #PRE_REMOVE_LIST="/usr/lib/*.la /usr/share/gtk-doc /usr/share/man"
 #REMOVE_LIST="/usr/lib/pkgconfig /usr/share/aclocal"
 #DEPLOY_DIST="/etc /usr/bin /usr/lib /usr/share"
@@ -434,12 +451,6 @@ exit
 		exec_cmd "rm -rf $CACHEDIR/gtk3 $TEMPDIR/$GTK3FILES"
 	fi;
 	
-}
-
-build_libxml2()
-{
-	echo "没有必要使用libxml2，应该使用expat"
-	exec_cmd "choke"
 }
 
 ###############################
