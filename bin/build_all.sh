@@ -46,8 +46,10 @@ sudo rm -rf $DISTDIR $DBG $WARN 1>/dev/null 2>&1 1>/dev/null 2>&1
 mkdir -p $SDKDIR/usr/sbin $SDKDIR/usr/bin $SDKDIR/sbin $SDKDIR/bin $SDKDIR/usr/lib $SDKDIR/lib
 mkdir -p $DEVDIR/include $DEVDIR/usr/include $DEVDIR/usr/lib $DEVDIR/lib $DEVDIR/usr/lib/pkgconfig $DEVDIR/usr/share/pkgconfig
 mkdir -p $BOOTDIR $CACHEDIR $INSTDIR
-source $BINDIR/utils.sh
+cd $BINDIR/
+source utils.sh
 mount_temp
+cd $ROOTDIR/
 
 #############################
 #  加载脚本
