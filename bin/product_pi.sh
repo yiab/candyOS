@@ -62,7 +62,7 @@ construct_pi()
     #export ADDITION_PKG_CONFIG_PATH="$SDKDIR/opt/vc/lib/pkgconfig:$ADDITION_PKG_CONFIG_PATH"
     
     export QT_DEVICE_CONFIG='linux-rasp-pi3-g++'
-    run_build  qt
+    run_build gnome_keyring #libcups # qt
     exit;
     
     run_build atk_spi2 gtk3 libnss libjpeg libpng x11_twm  x11_xinit cairo

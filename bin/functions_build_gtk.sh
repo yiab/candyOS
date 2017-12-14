@@ -34,7 +34,7 @@ generate_script  glib     $GLIBFILE     \
     "--config=$PARAMS"  \
     '--deploy-sdk=/usr/include /usr/lib /usr/share'                                  \
     '--deploy-rootfs=/usr/bin /usr/lib/*.so* /usr/share/locale' \
-    '--depends=libz libffi libmount dbus cross_python' 
+    '--depends=libz libffi libmount dbus cross_python native_glib' 
 #libiconv libpcre
 
 ###########################

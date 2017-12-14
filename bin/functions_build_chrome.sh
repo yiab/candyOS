@@ -65,5 +65,15 @@ generate_script  sqlite     $SQLITEFILE     \
     '--deploy-rootfs=/usr/bin /usr/lib -/usr/lib/*.la -/usr/lib/pkgconfig' \
     '--deploy-sdk=/usr/include /usr/lib'   \
     '--depends=cross_autogen_env'
-    
+
+##############################
+# 编译 gnome-keyring
+# Download: http://ftp.acc.umu.se/pub/gnome/sources/gnome-keyring/3.27/
+GNOMEKEYRINGFILE=gnome-keyring-3.27.2
+generate_script  gnome_keyring     $GNOMEKEYRINGFILE     \
+    '--config=--host=$MY_TARGET --prefix=/usr --disable-static --with-sysroot=$SDKDIR  --disable-doc --disable-debug --disable-strict --disable-coverage '       \
+    '--deploy-rootfs=/usr/bin /usr/lib -/usr/lib/*.la -/usr/lib/pkgconfig' \
+    '--deploy-sdk=/usr/include /usr/lib'   \
+    '--depends=cross_autogen_env dbus glib'
+ 
 

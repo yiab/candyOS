@@ -37,10 +37,10 @@ generate_script     libkmod   $LIBKMODFILE                                      
 LIBUSBFILE=libusb-1.0.21
 generate_script     libusb   $LIBUSBFILE                                                                          \
     '--config=--prefix=/usr --host=$MY_TARGET --disable-static --disable-debug-log'            \
+    '--depends=libudev'         \
     '--deploy-rootfs=/usr/lib -/usr/lib/*.la -/usr/lib/pkgconfig'    \
     '--deploy-sdk=/ '
 
-# '--depends=libudev'   
 
 ##############################
 # 编译 libusb-compat-0.1.4 http://www.libusb.org/
